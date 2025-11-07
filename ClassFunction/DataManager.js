@@ -55,6 +55,9 @@ class DataManager {
   
   async robUser(authorId, user, message) {
     try {
+      if(user.id === config.ownerId[0]) {
+        throw new Error("You cannot rob the bot owner!");
+      }
       // Initial robbery message
       const robMsg = await message.reply(
         `<:rob:1329849024211062828>Robbing... ${user}`
