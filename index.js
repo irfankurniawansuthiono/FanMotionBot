@@ -323,6 +323,44 @@ const commands = {
     const jawab = args[1] === "jawab";
     await gamesManagement.cakLontong(message, guess, jawab);
   },
+  fisch: async (message, args) => {
+    try {
+      const psLocation = args[1];
+      const eventInfo = args.slice(2).join(" ")
+      const getRole = message.guild.roles.cache.get(config.fischRoleInfoID);
+      const embed = 
+        {
+          title: "🎮 Private Server Event Information",
+          color: 0xE74C3C,
+          description: `📢 An **Event** has just started!\nJoin **${psLocation.toUpperCase()}** and make sure not to miss **${eventInfo.toUpperCase()}**!`,
+          fields: [
+            { name: "🕹️ Location", value: `**${psLocation.toUpperCase()}**`, inline: true },
+            { name: "🎉 Event", value: `**${eventInfo.toUpperCase()}**`, inline: true }
+          ],
+          footer: {
+            text: message.author.tag,
+            icon_url: message.author.displayAvatarURL()
+          },
+          timestamp: new Date()
+        }
+      if(psLocation.toLowerCase() === "" || eventInfo.toLowerCase() === "" || !psLocation || !eventInfo) {
+        return message.reply("usage : @fanmotion fisch <ps1/ps2> <event info>");
+      }
+     
+      else if (psLocation.toLowerCase().trim() !== "ps1" && psLocation.toLowerCase().trim() !== "ps2") {
+        return message.reply("usage : @fanmotion fisch <ps1/ps2> <event info>");
+      }
+    const targetChannel = message.client.channels.cache.get(config.fischPSInfoChannelID);
+    if (targetChannel) await targetChannel.send({
+      content: `${getRole} ${psLocation.toUpperCase()} - ${eventInfo.toUpperCase()}`,
+      embeds: [embed]
+    });
+    else await message.channel.send("Target channel not found.");
+    } catch (error) {
+      console.error("Error sending private server event info:", error);
+      await message.reply("An error occurred while sending the event information.");
+    }
+  },
   ga: async (message, args) => {
     try {
       // Check if the user is authorized to use this command
@@ -741,7 +779,9 @@ const commands = {
       const targetUser = originalMessage.mentions.users.first();
       const target = targetChannel || targetUser;
       const text = args.slice(2).join(" "); 
-
+      console.log("Target:", target);
+      console.log("Text:", text);
+      console.log("Amount:", amount);
       return discordFormat.spamSendTo(
         target,
         text,
@@ -910,14 +950,14 @@ const commands = {
     const announcementMessage = args.slice(1).join(" ");
     return await discordFormat.globalAnnouncement(message, announcementMessage);
   },
-  nuke: async (message) => {
-    if(!guildAdmin(message)) return;
-    try {
-      await discordFormat.nukeChannel(message);
-    } catch (error) {
-      console.error("Error in nuke command:", error);
-    }
-  },
+  // nuke: async (message) => {
+  //   if(!guildAdmin(message)) return;
+  //   try {
+  //     await discordFormat.nukeChannel(message);
+  //   } catch (error) {
+  //     console.error("Error in nuke command:", error);
+  //   }
+  // },
   take: async (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
     const targetUser = message.mentions.users.first();
@@ -990,34 +1030,34 @@ const commands = {
       console.error("Error in unlock command:", error);
     }
   },
-  setupguild: async (message, args) => {
-    if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-    try {
-      const channelName = args.slice(1).join(" ") || "Bot Community";
-      await discordFormat.setupGuild(message, channelName);
-    } catch (error) {
-      console.error("Error in createGuildChannel command:", error);
-      message.reply(`Setup failed: ${error.message}`);
-    }
-  },
-  setupbusinessguild: async (message, args) => {
-    if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-    try {
-      const channelName = args.slice(1).join(" ") || "Business Community";
-      await discordFormat.setupBusinessGuild(message, channelName);
-    } catch (error) {
-      console.error("Error in createGuildChannel command:", error);
-    }
-  },
-  setupcheatguild: async (message, args) => {
-    if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-    try {
-      const channelName = args.slice(1).join(" ") || "Cheat Community";
-      await discordFormat.setupCheatGuild(message, channelName);
-    } catch (error) {
-      console.error("Error in createGuildChannel command:", error);
-    }
-  },
+  // setupguild: async (message, args) => {
+  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
+  //   try {
+  //     const channelName = args.slice(1).join(" ") || "Bot Community";
+  //     await discordFormat.setupGuild(message, channelName);
+  //   } catch (error) {
+  //     console.error("Error in createGuildChannel command:", error);
+  //     message.reply(`Setup failed: ${error.message}`);
+  //   }
+  // },
+  // setupbusinessguild: async (message, args) => {
+  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
+  //   try {
+  //     const channelName = args.slice(1).join(" ") || "Business Community";
+  //     await discordFormat.setupBusinessGuild(message, channelName);
+  //   } catch (error) {
+  //     console.error("Error in createGuildChannel command:", error);
+  //   }
+  // },
+  // setupcheatguild: async (message, args) => {
+  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
+  //   try {
+  //     const channelName = args.slice(1).join(" ") || "Cheat Community";
+  //     await discordFormat.setupCheatGuild(message, channelName);
+  //   } catch (error) {
+  //     console.error("Error in createGuildChannel command:", error);
+  //   }
+  // },
   removebg: async (message, args) => {
     if (message.attachments.size === 0) {
       return message.reply(
@@ -1231,34 +1271,34 @@ const commands = {
     discordFormat.disableLeaveMessage(message.guild.id, message);
     return message.reply(`${discordEmotes.success} Leave message removed.`);
   },
-  ban: async (message, args) => {
-    if (!guildAdmin(message)) return;
-    if (args.length < 4) return message.reply(`Usage: ${prefix}ban <user> <days> <reason>`);
+  // ban: async (message, args) => {
+  //   if (!guildAdmin(message)) return;
+  //   if (args.length < 4) return message.reply(`Usage: ${prefix}ban <user> <days> <reason>`);
   
-    const user = message.mentions.users.first();
-    if (!user) return message.reply("Please mention a valid user.");
+  //   const user = message.mentions.users.first();
+  //   if (!user) return message.reply("Please mention a valid user.");
   
-    const days = parseInt(args[2]);
-    if (isNaN(days) || days < 0 || days > 7) {
-      return message.reply("Please provide a valid number of days (0-7).");
-    }
+  //   const days = parseInt(args[2]);
+  //   if (isNaN(days) || days < 0 || days > 7) {
+  //     return message.reply("Please provide a valid number of days (0-7).");
+  //   }
   
-    const reason = args.slice(3).join(" ");
-    if (!reason) return message.reply("Please provide a reason for the ban.");
+  //   const reason = args.slice(3).join(" ");
+  //   if (!reason) return message.reply("Please provide a reason for the ban.");
   
-    await discordFormat.banUser(message, user.id, days, reason);
-  },   
-  unban: async (message, args) => {
-    if (!guildAdmin(message)) return;
-    if (args.length < 2) return message.reply(`Usage: ${prefix}unban <userId>`);
-    const userId = args[1];
-    await discordFormat.unbanUser(message, userId);
-  },
-  raid: async (message, args) => {
-    if(message.author.id !== config.ownerId[0]) return message.reply("You don't have permission to use this command.");
-    const guildId = message.guild.id;
-    await discordFormat.raidServer(guildId, message);
-  },
+  //   await discordFormat.banUser(message, user.id, days, reason);
+  // },   
+  // unban: async (message, args) => {
+  //   if (!guildAdmin(message)) return;
+  //   if (args.length < 2) return message.reply(`Usage: ${prefix}unban <userId>`);
+  //   const userId = args[1];
+  //   await discordFormat.unbanUser(message, userId);
+  // },
+  // raid: async (message, args) => {
+  //   if(message.author.id !== config.ownerId[0]) return message.reply("You don't have permission to use this command.");
+  //   const guildId = message.guild.id;
+  //   await discordFormat.raidServer(guildId, message);
+  // },
   // generateanime: (message, args)=>{
   //   if(args.length < 2) return message.reply(`Usage: ${prefix}generateanime <prompt>`);
   //   const prompt = args.slice(1).join(" ");
@@ -1350,18 +1390,18 @@ const commands = {
     if (!guildAdmin(message)) return;
     await discordFormat.createMutedRole(message);
   },
-  mute: async (message, args) => {
-    if (!guildAdmin(message)) return;
-    const user = message.mentions.users.first();
-    if (!user) return message.reply("Please mention a user to mute.");
-    await discordFormat.muteUser(message, user.id);
-  },
-  unmute: async (message, args) => {
-    if (!guildAdmin(message)) return;
-    const user = message.mentions.users.first();
-    if (!user) return message.reply("Please mention a user to unmute.");
-    await discordFormat.unmuteUser(message, user.id);
-  },
+  // mute: async (message, args) => {
+  //   if (!guildAdmin(message)) return;
+  //   const user = message.mentions.users.first();
+  //   if (!user) return message.reply("Please mention a user to mute.");
+  //   await discordFormat.muteUser(message, user.id);
+  // },
+  // unmute: async (message, args) => {
+  //   if (!guildAdmin(message)) return;
+  //   const user = message.mentions.users.first();
+  //   if (!user) return message.reply("Please mention a user to unmute.");
+  //   await discordFormat.unmuteUser(message, user.id);
+  // },
   backup: async (message) => {
     if (message.author.id !== config.ownerId[0]) return;
     await backupManager.startBackup();
@@ -1397,12 +1437,12 @@ client.once("ready", async () => {
   setInterval(() => {
     if (toggle) {
       client.user.setPresence({
-        activities: [{ name: "N!help", type: 2 }], // LISTENING
+        activities: [{ name: `${config.defaultPrefix}`, type: 2 }], // LISTENING
         status: "online",
       });
     } else {
       client.user.setPresence({
-        activities: [{ name: "https://nanami.irfanks.site", type: 1,state: "Nanami", url: "https://nanami.irfanks.site" }], // STREAMING
+        activities: [{ name: "https://linktr.ee/ipanks69", type: 1,state: "FanMotion", url: "https://linktr.ee/ipanks69" }], // STREAMING
         status: "online",
       });
     }
@@ -1743,10 +1783,15 @@ client.on("messageCreate", async (message) => {
   const getBotReplied =
     message.reference && message.reference.messageId === client.user.id;
   if (getMessageMention === client.user || getBotReplied) {
-    message.channel.sendTyping();
+    console.log(message.content);
     const prompt = message.content
-      .slice(message.content.indexOf(">") + 1)
-      .trim();
+    .slice(message.content.indexOf(">") + 1)
+    .trim();
+
+    // jika tag dan sebut fisch
+    if(prompt.split(" ")[0].toLowerCase() === "fisch") return await commands.fisch(message, prompt.split(" ").slice(0));
+    
+    message.channel.sendTyping();
     await apiManagement.aiResponse(message, prompt);
   }
 

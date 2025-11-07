@@ -605,7 +605,7 @@ class Games {
       await new Promise((resolve) => setTimeout(resolve, 3000));
   
       // Simulasi hasil
-      const willWin = Math.random() < 0.2;
+      const willWin = Math.random() < 0.4;
       const outcome = willWin ? choice : choice === "h" ? "t" : "h";
       const won = willWin;
       const amount = won ? bet : -bet;
