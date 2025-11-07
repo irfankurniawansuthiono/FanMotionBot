@@ -46,7 +46,7 @@ class BackupFiles {
                     { name: "📁 Players File", value: this.playersPath, inline: true },
                     { name: "📁 Guilds File", value: this.guildsPath, inline: true }
                 )
-                .setFooter({ text: "Nanami Backup System" })
+                .setFooter({ text: "FanMotion Backup System" })
                 .setTimestamp();
 
             // Kirim embed + file ke owner
@@ -68,7 +68,7 @@ class BackupFiles {
                     .setColor("#FF0000")
                     .setTitle("⚠️ Backup Failed")
                     .setDescription(`Terjadi kesalahan saat mengirim file backup.\n\n**Error:** ${error.message}`)
-                    .setFooter({ text: "Nanami Backup System" })
+                    .setFooter({ text: "FanMotion Backup System" })
                     .setTimestamp();
 
                 await owner.send({ embeds: [errorEmbed] });

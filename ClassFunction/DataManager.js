@@ -40,7 +40,7 @@ class DataManager {
     );
   
     const leaderboardEmbed = new EmbedBuilder()
-      .setTitle("🏆 Nanami's Top 10 Players")
+      .setTitle("🏆 FanMotion's Top 10 Players")
       .setDescription(leaderboard.join("\n"))
       .setColor("#FFD700")
       .setThumbnail("https://i.ibb.co/DMrjGVR/Trophy.png")
@@ -79,7 +79,7 @@ class DataManager {
       const robEmbedHelper = new EmbedBuilder()
         .setColor("#FF0000")
         .setTitle(":ninja: Rob Result")
-        .setFooter({ text: "Nanami" })
+        .setFooter({ text: "FanMotion" })
         .setTimestamp();
 
       // Handle successful robbery
@@ -136,7 +136,7 @@ class DataManager {
         .setColor("#FF0000")
         .setTitle(":anger: Error")
         .setDescription(error.message)
-        .setFooter({ text: "Nanami" })
+        .setFooter({ text: "FanMotion" })
         .setTimestamp();
 
       await message.reply({ embeds: [errorEmbed] });
@@ -238,7 +238,7 @@ class DataManager {
         .setColor("#FF0000")
         .setTitle(":anger: Error")
         .setDescription(error.message)
-        .setFooter({ text: "Nanami" })
+        .setFooter({ text: "FanMotion" })
         .setTimestamp();
 
       await message.reply({ embeds: [errorEmbed], ephemeral: true });

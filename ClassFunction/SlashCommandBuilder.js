@@ -1558,63 +1558,6 @@ class SlashCommands {
             }
         
             }),
-
-            setupGuild: () => ({
-                data: new SlashCommandBuilder()
-                .setName("setup-guild")
-                .setDescription("Setup the guild")
-                .addStringOption(option =>
-                    option.setName("name")
-                      .setDescription("The name of the server")
-                      .setRequired(true)
-                  ),
-                execute: async (interaction) => {
-                    try {
-                        if(interaction.user.id !== config.ownerId[0]) return;
-                        const guildName = interaction.options.getString("name");
-                        await interaction.reply({
-                            content: `${discordEmotes.success} Executed`,
-                            ephemeral: true
-                        })
-                        return this.discordFormat.setupGuild(interaction, guildName);
-                    } catch (error) {
-                        console.error('Error in slash setup-guild command:', error);
-                        await interaction.reply({
-                            content: `${discordEmotes.error} An error occurred while executing the command.`,
-                            ephemeral: true
-                        })
-                    
-                }
-            }
-            }),
-
-            setupBusinessGuild: ()=> ({
-                data: new SlashCommandBuilder()
-                .setName("setup-business-guild")
-                .setDescription("Setup the business guild")
-                .addStringOption(option =>
-                    option.setName("name")
-                      .setDescription("The name of the server")
-                      .setRequired(true)
-                  ),
-                execute: async (interaction) => {
-                    try {
-                        if(interaction.user.id !== config.ownerId[0]) return;
-                        const guildName = interaction.options.getString("name") ?? "Business Guild";
-                        await interaction.reply({
-                            content: `${discordEmotes.success} Executed`,
-                            ephemeral: true
-                        })
-                        return this.discordFormat.setupBusinessGuild(interaction, guildName);
-                    } catch (error) {
-                        console.error('Error in slash setup-business-guild command:', error);
-                        await interaction.reply({
-                            content: `${discordEmotes.error} An error occurred while executing the command.`,
-                            ephemeral: true
-                        })
-                }}
-            }),
-
             removeBackground: () => ({
                 data: new SlashCommandBuilder()
                 .setName("removebg")

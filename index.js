@@ -84,7 +84,7 @@ export const createHelpEmbed = (page = 1, user) => {
   };
   const embed = new EmbedBuilder()
     .setColor(embedColors[page])
-    .setTitle(`Nanami Help Menu - ${pages[page].title}`)
+    .setTitle(`FanMotion Help Menu - ${pages[page].title}`)
     .setDescription(
       `**Page ${page}/4**\nGunakan tombol di bawah untuk navigasi\n\nPrefix: \`${prefix}\``
     )

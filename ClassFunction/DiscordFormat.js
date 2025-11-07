@@ -10,7 +10,7 @@ class DiscordFormat {
   constructor() {
     if (!DiscordFormat.instance) {
       this.color = "#FFF000";
-      this.title = "Nanami";
+      this.title = "FanMotion";
       DiscordFormat.instance = this;
     }
     return DiscordFormat.instance;
@@ -110,22 +110,6 @@ ${description}
         `${discordEmotes.error} An error occurred while disabling the welcome role. Please try again later.`
       );
     }
-  }
-  setupGuild(message, channelName) {
-    const guildId = message.guild.id;
-    return guildManagement.setupGuild(message.client, guildId, channelName);
-  }
-  setupCheatGuild(message, channelName) {
-    const guildId = message.guild.id;
-    return guildManagement.setupCheatGuild(message.client, guildId, channelName);
-  }
-  setupBusinessGuild(message, channelName) {
-    const guildId = message.guild.id;
-    return guildManagement.setupBusinessGuild(
-      message.client,
-      guildId,
-      channelName
-    );
   }
   async unlockChannel(message) {
     const author = message.user ?? message.author;
@@ -508,12 +492,12 @@ ${description}
   inviteBot(message) {
      const inviteEmbed = new EmbedBuilder()
           .setColor("#FF0000")
-          .setTitle("Nanami Invite")
-          .setDescription("Invite Nanami to your server!")
+          .setTitle("FanMotion Invite")
+          .setDescription("Invite FanMotion to your server!")
           .setURL(
             `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot`
           )
-          .setFooter({ text: "Nanami Stats" })
+          .setFooter({ text: "FanMotion Stats" })
           .setTimestamp();
     
         return message.reply({ embeds: [inviteEmbed], ephemeral: true });
@@ -846,7 +830,7 @@ async nanamiBotInfo(client, message){
             {
               name: "🔗 Links",
               value: `• [Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot)
-                    • [Nanami Community Server](https://discord.gg/hXT5R2ND9a)
+                    • [FanMotion Community Server](https://discord.gg/hXT5R2ND9a)
                     • [Developer Website](${config.ownerWebsite})
                     • [Nanami on WEBSITE!](${config.nanamiWebsite})`,
               inline: false,
