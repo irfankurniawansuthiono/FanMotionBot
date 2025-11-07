@@ -238,5 +238,4 @@ const pages = {
   },
 };
 
-  // "`🎭 raid` - Raid a server"
 export { config, discordEmotes, pages, newPlayerData };

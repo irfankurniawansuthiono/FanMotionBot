@@ -1,8 +1,8 @@
-# Nanami
+# FanMotion Official Bot
 
-Nanami adalah bot Discord yang dirancang untuk menambahkan keseruan ke server Anda. Dengan integrasi AI dan fitur gaming yang seru, bot ini siap menjadi tambahan sempurna untuk komunitas Anda.
+FanMotion adalah bot Discord yang dirancang untuk menambahkan keseruan ke server Anda. Dengan integrasi AI dan fitur gaming yang seru, bot ini siap menjadi tambahan sempurna untuk komunitas Anda.
 
-> **⚠️ Peringatan**: Bot ini tidak memiliki dokumentasi, jika anda ingin bertanya silahkan chat dan tag ipanks69 di [Server Discord](https://discord.gg/hXT5R2ND9a) 
+> **⚠️ Peringatan**: Bot ini tidak memiliki dokumentasi, jika anda ingin bertanya silahkan chat dan tag ipanks69 di [Server Discord](https://linktr.ee/ipanks69) 
 
 ## 📥 Instalasi
 
