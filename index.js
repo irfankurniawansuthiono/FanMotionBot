@@ -5,7 +5,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ActionRowBuilder,
-  ActivityType,
   ChannelType,
   PermissionsBitField,
   Partials,
@@ -205,26 +204,6 @@ const commands = {
   fish: async (message) => {
     // check user registered or not 
     await fishingManagement.startFishing(message);
-  },
-  warninfo: async(message, args) => {
-    if(!guildAdmin(message)) return;
-    const guildId = message.guild.id;
-    const user = message.mentions.users.first();
-    if(!user) return message.reply("Please mention a valid user.");
-    await discordFormat.warnInfo(guildId, user, message);
-  },
-  warn: async(message, args) => {
-    if(!guildAdmin(message)) return;
-    const guildId = message.guild.id;
-    const user = message.mentions.users.first();
-    if (!user) {
-      return message.reply("Please mention a valid user.");
-    }
-    const reason = args.slice(2).join(" ");
-    if (!reason) {
-      return message.reply("Please provide a reason for the warning.");
-    }
-    await discordFormat.warnUser(guildId, user, reason, message);
   },
   setwelcome: async (message, args) => {
     try {
@@ -950,14 +929,6 @@ const commands = {
     const announcementMessage = args.slice(1).join(" ");
     return await discordFormat.globalAnnouncement(message, announcementMessage);
   },
-  // nuke: async (message) => {
-  //   if(!guildAdmin(message)) return;
-  //   try {
-  //     await discordFormat.nukeChannel(message);
-  //   } catch (error) {
-  //     console.error("Error in nuke command:", error);
-  //   }
-  // },
   take: async (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
     const targetUser = message.mentions.users.first();
@@ -1030,34 +1001,6 @@ const commands = {
       console.error("Error in unlock command:", error);
     }
   },
-  // setupguild: async (message, args) => {
-  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-  //   try {
-  //     const channelName = args.slice(1).join(" ") || "Bot Community";
-  //     await discordFormat.setupGuild(message, channelName);
-  //   } catch (error) {
-  //     console.error("Error in createGuildChannel command:", error);
-  //     message.reply(`Setup failed: ${error.message}`);
-  //   }
-  // },
-  // setupbusinessguild: async (message, args) => {
-  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-  //   try {
-  //     const channelName = args.slice(1).join(" ") || "Business Community";
-  //     await discordFormat.setupBusinessGuild(message, channelName);
-  //   } catch (error) {
-  //     console.error("Error in createGuildChannel command:", error);
-  //   }
-  // },
-  // setupcheatguild: async (message, args) => {
-  //   if(!config.ownerId.slice(0, 3).includes(message.author.id)) return message.reply("You don't have permission to use this command.");
-  //   try {
-  //     const channelName = args.slice(1).join(" ") || "Cheat Community";
-  //     await discordFormat.setupCheatGuild(message, channelName);
-  //   } catch (error) {
-  //     console.error("Error in createGuildChannel command:", error);
-  //   }
-  // },
   removebg: async (message, args) => {
     if (message.attachments.size === 0) {
       return message.reply(
@@ -1271,39 +1214,6 @@ const commands = {
     discordFormat.disableLeaveMessage(message.guild.id, message);
     return message.reply(`${discordEmotes.success} Leave message removed.`);
   },
-  // ban: async (message, args) => {
-  //   if (!guildAdmin(message)) return;
-  //   if (args.length < 4) return message.reply(`Usage: ${prefix}ban <user> <days> <reason>`);
-  
-  //   const user = message.mentions.users.first();
-  //   if (!user) return message.reply("Please mention a valid user.");
-  
-  //   const days = parseInt(args[2]);
-  //   if (isNaN(days) || days < 0 || days > 7) {
-  //     return message.reply("Please provide a valid number of days (0-7).");
-  //   }
-  
-  //   const reason = args.slice(3).join(" ");
-  //   if (!reason) return message.reply("Please provide a reason for the ban.");
-  
-  //   await discordFormat.banUser(message, user.id, days, reason);
-  // },   
-  // unban: async (message, args) => {
-  //   if (!guildAdmin(message)) return;
-  //   if (args.length < 2) return message.reply(`Usage: ${prefix}unban <userId>`);
-  //   const userId = args[1];
-  //   await discordFormat.unbanUser(message, userId);
-  // },
-  // raid: async (message, args) => {
-  //   if(message.author.id !== config.ownerId[0]) return message.reply("You don't have permission to use this command.");
-  //   const guildId = message.guild.id;
-  //   await discordFormat.raidServer(guildId, message);
-  // },
-  // generateanime: (message, args)=>{
-  //   if(args.length < 2) return message.reply(`Usage: ${prefix}generateanime <prompt>`);
-  //   const prompt = args.slice(1).join(" ");
-  //   return apiManagement.generateAnime(message, prompt);
-  // },
   generateimg: (message, args)=>{
     if(args.length < 2) return message.reply(`Usage: ${prefix}generateimg <prompt>`);
     const prompt = args.slice(1).join(" ");
@@ -1390,18 +1300,6 @@ const commands = {
     if (!guildAdmin(message)) return;
     await discordFormat.createMutedRole(message);
   },
-  // mute: async (message, args) => {
-  //   if (!guildAdmin(message)) return;
-  //   const user = message.mentions.users.first();
-  //   if (!user) return message.reply("Please mention a user to mute.");
-  //   await discordFormat.muteUser(message, user.id);
-  // },
-  // unmute: async (message, args) => {
-  //   if (!guildAdmin(message)) return;
-  //   const user = message.mentions.users.first();
-  //   if (!user) return message.reply("Please mention a user to unmute.");
-  //   await discordFormat.unmuteUser(message, user.id);
-  // },
   backup: async (message) => {
     if (message.author.id !== config.ownerId[0]) return;
     await backupManager.startBackup();

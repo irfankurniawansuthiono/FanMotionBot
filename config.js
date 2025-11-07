@@ -15,7 +15,7 @@ const config = {
   // nanami server
   // guildBaseServerID: "1329992328550682774",
   // announcementChannelID: "1332378583905341501",
-  // bugReportChannelID: "1332378606038548510",
+  bugReportChannelID: "1436312691709837353",
   // newCommandsChannelID: "1332378586614599752",
   // anonimLogsChannelID : "1333476337373155358",
   guildBaseServerID: "1400476982893871194",
@@ -126,8 +126,6 @@ const pages = {
           "`🔒 lock` - Lock current channel",
           "`🔓 unlock` - Unlock the channel",
           "`🗑️ purge <amount>` - Delete messages, max 100 purge",
-          "`🔨 kick <@user>` - Kick a user",
-          "`☢️ nuke` - Nuke the channel",
           "`📝 setwelcome <channel>` - Set welcome message",
           "`📝 disablewelcome` - Disable welcome message",
           "`🔨 tw <@user?>` - Test welcome message",
