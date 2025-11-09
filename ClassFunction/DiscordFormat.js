@@ -866,7 +866,7 @@ async nanamiHostingInfo(client, message) {
       .setColor("#FFD700")
       .setTitle("🌐 VPS & Hosting Stats")
       .setThumbnail("https://logos-world.net/wp-content/uploads/2022/04/Ubuntu-New-Logo-700x394.png")
-      .setDescription("The server is sponsored by <@598889864951496734> ✨💪")
+      .setDescription("The server is sponsored by <@1043090988731732078> ✨💪")
       .addFields(
         {
           name: "💻 System Information",
@@ -888,7 +888,7 @@ async nanamiHostingInfo(client, message) {
         },
         {
           name: "🎁 Sponsor",
-          value: `> 🙌 **Thanks to [MafiaPS Coder](https://www.growtopia.id) for sponsoring VPS!**`,
+          value: `> 🙌 **Thanks to <@1043090988731732078> for sponsoring VPS!**`,
         },
         {
           name: "📣 Note",
