@@ -9,9 +9,7 @@ import {
   PermissionsBitField,
   Partials,
 } from "discord.js";
-import {
-  Player,
-} from "discord-player";
+import { Player } from "discord-player";
 import { ApiManagement } from "./ClassFunction/ApiManagement.js";
 import { SlashCommands } from "./ClassFunction/SlashCommandBuilder.js";
 import { Games } from "./ClassFunction/GamesManagement.js";
@@ -30,6 +28,7 @@ import { YoutubeExtractor } from "discord-player-youtube";
 import { SpotifyExtractor } from "discord-player-spotify";
 import GithubCron from "./ClassFunction/GithubCron.js";
 import BackupFiles from "./ClassFunction/BackupFiles.js";
+import similarity from "similarity";
 export const formatClockHHMMSS = (milliseconds) => {
   if (typeof milliseconds !== "number" || milliseconds < 0) {
     throw new Error("Input must be a non-negative number.");
@@ -40,11 +39,12 @@ export const formatClockHHMMSS = (milliseconds) => {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
 export const formatDate = (timestamp) => new Date(timestamp).toLocaleString();
-
 
 export const formatBalance = (amount) =>
   new Intl.NumberFormat("en-US", {
@@ -65,11 +65,9 @@ export const client = new Client({
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessageReactions
+    GatewayIntentBits.GuildMessageReactions,
   ],
 });
-
-
 
 let prefix = config.defaultPrefix;
 
@@ -116,109 +114,131 @@ const anonChat = new AnonChat();
 
 export const ownerHelperFirewall = (authorId, message) => {
   if (!config.ownerId.includes(authorId)) {
-    message.reply({ content: `${discordEmotes.error} This command is only available to the bot owner!`, ephemeral: true });
+    message.reply({
+      content: `${discordEmotes.error} This command is only available to the bot owner!`,
+      ephemeral: true,
+    });
     return false;
   }
   return true;
 };
 
-
 export const guildAdmin = (ctx) => {
-    let user, member, channelType;
+  let user, member, channelType;
 
-    // Cek apakah konteks berasal dari Slash Command atau Prefix Command
-    if (ctx.isChatInputCommand?.()) {  
-        // Jika Slash Command
-        user = ctx.user;
-        member = ctx.member;
-        channelType = ctx.channel?.type;
-    } else {  
-        // Jika Prefix Command (Message)
-        user = ctx.author;
-        member = ctx.member;
-        channelType = ctx.channel?.type;
-    }
+  // Cek apakah konteks berasal dari Slash Command atau Prefix Command
+  if (ctx.isChatInputCommand?.()) {
+    // Jika Slash Command
+    user = ctx.user;
+    member = ctx.member;
+    channelType = ctx.channel?.type;
+  } else {
+    // Jika Prefix Command (Message)
+    user = ctx.author;
+    member = ctx.member;
+    channelType = ctx.channel?.type;
+  }
 
-    // Tidak bisa digunakan di DM
-    if (channelType === ChannelType.DM) {
-        ctx.reply?.("You can't use this command in DMs.") ?? ctx.channel.send("You can't use this command in DMs.");
-        return false;
-    }
+  // Tidak bisa digunakan di DM
+  if (channelType === ChannelType.DM) {
+    ctx.reply?.("You can't use this command in DMs.") ??
+      ctx.channel.send("You can't use this command in DMs.");
+    return false;
+  }
 
-    // Jika user adalah pemilik bot
-    if (config.ownerId.includes(user.id)) {
-        return true;
-    }
-
-    // Jika bukan admin
-    if (!member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        ctx.reply?.("You do not have permission to use this command.") ?? ctx.channel.send("You do not have permission to use this command.");
-        return false;
-    }
-
+  // Jika user adalah pemilik bot
+  if (config.ownerId.includes(user.id)) {
     return true;
+  }
+
+  // Jika bukan admin
+  if (!member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    ctx.reply?.("You do not have permission to use this command.") ??
+      ctx.channel.send("You do not have permission to use this command.");
+    return false;
+  }
+
+  return true;
 };
 
-
-
 const commands = {
-  setbait: (message, args)=>{
-    if(!ownerHelperFirewall(message.author.id, message)) return;
-    if(args.length < 2) return message.reply(`Usage: ${prefix}setbait <amount>`);
-    const amount = message.mentions.users.first() ? parseInt(args[2]) : parseInt(args[1]);
-    const user = message.mentions.users.first() ? message.mentions.users.first().id : message.author.id;
+  setbait: (message, args) => {
+    if (!ownerHelperFirewall(message.author.id, message)) return;
+    if (args.length < 2)
+      return message.reply(`Usage: ${prefix}setbait <amount>`);
+    const amount = message.mentions.users.first()
+      ? parseInt(args[2])
+      : parseInt(args[1]);
+    const user = message.mentions.users.first()
+      ? message.mentions.users.first().id
+      : message.author.id;
     dataManager.setbait(user, amount);
-    message.reply(`Set bait for ${message.mentions.users.first() ? message.mentions.users.first() : message.author} to ${amount}`);
+    message.reply(
+      `Set bait for ${
+        message.mentions.users.first()
+          ? message.mentions.users.first()
+          : message.author
+      } to ${amount}`
+    );
   },
-  inv:(message)=>{
-    const user = message.author
-    dataManager.getInventory(message, user.id, user)
+  inv: (message) => {
+    const user = message.author;
+    dataManager.getInventory(message, user.id, user);
   },
   checkinv: async (message) => {
-    if(!ownerHelperFirewall(message.author.id, message)) return;
+    if (!ownerHelperFirewall(message.author.id, message)) return;
     const userMention = message.mentions.users.first();
-    if(!userMention) return message.reply("Please mention a valid user.");
+    if (!userMention) return message.reply("Please mention a valid user.");
     try {
       await dataManager.getInventory(message, userMention.id, userMention);
     } catch (error) {
       message.reply("An error occurred while checking the inventory.");
-      console.error (error);
+      console.error(error);
     }
   },
   shop: async (message) => {
-    await shopManagement.showShopCategories(client,message);
+    await shopManagement.showShopCategories(client, message);
   },
-  resetinv:(message)=> {
-    if(!ownerHelperFirewall(message.author.id, message)) return;
+  resetinv: (message) => {
+    if (!ownerHelperFirewall(message.author.id, message)) return;
     const user = message.author.id;
     const userMention = message.mentions.users.first();
     try {
-      const status = dataManager.resetInventory(userMention ? userMention.id : user);
-      if(!status) return message.reply("User not found! please register them first.");
-      message.reply(userMention ? `${userMention}'s inventory has been reset.` : "Your Inventory has been reset.");
+      const status = dataManager.resetInventory(
+        userMention ? userMention.id : user
+      );
+      if (!status)
+        return message.reply("User not found! please register them first.");
+      message.reply(
+        userMention
+          ? `${userMention}'s inventory has been reset.`
+          : "Your Inventory has been reset."
+      );
     } catch (error) {
       message.reply("An error occurred while resetting the inventory.");
-      console.error (error);
+      console.error(error);
     }
   },
   fish: async (message) => {
-    // check user registered or not 
+    // check user registered or not
     await fishingManagement.startFishing(message);
   },
   setwelcome: async (message, args) => {
     try {
-        // Cek apakah pengguna memiliki izin admin
-        if (!guildAdmin(message)) return;
+      // Cek apakah pengguna memiliki izin admin
+      if (!guildAdmin(message)) return;
 
-        // Cek apakah channel disebutkan
-        const channel = message.mentions.channels.first();
-        if (!channel) {
-            return message.reply("Please mention a valid channel.");
-        }
-        discordFormat.setWelcome(message.guild.id, channel.id, message);
+      // Cek apakah channel disebutkan
+      const channel = message.mentions.channels.first();
+      if (!channel) {
+        return message.reply("Please mention a valid channel.");
+      }
+      discordFormat.setWelcome(message.guild.id, channel.id, message);
     } catch (error) {
-        console.error("Error setting welcome message channel:", error);
-        return message.reply("An error occurred while setting the welcome message channel. Please try again later.");
+      console.error("Error setting welcome message channel:", error);
+      return message.reply(
+        "An error occurred while setting the welcome message channel. Please try again later."
+      );
     }
   },
   volume: (message, args) => {
@@ -228,45 +248,49 @@ const commands = {
     }
     voiceManager.setVolume(message, volume);
   },
-  snick:(message, args) => {
+  snick: (message, args) => {
     const q = args.slice(1).join(" ");
     apiManagement.stylizeText(message, q);
   },
-  vol:async (message, args) => {
-      const volume = parseInt(args[1]);
-      if (isNaN(volume) || volume < 0 || volume > 100) {
-        return message.reply("Volume must be a number between 0 and 100.");
-      }
-      await voiceManager.setVolume(message, volume);
+  vol: async (message, args) => {
+    const volume = parseInt(args[1]);
+    if (isNaN(volume) || volume < 0 || volume > 100) {
+      return message.reply("Volume must be a number between 0 and 100.");
+    }
+    await voiceManager.setVolume(message, volume);
   },
   bugreport: async (message, args) => {
     if (message.author.id === config.ownerId[0]) {
       return await discordFormat.bugReport(message, args.slice(1).join(" "));
     }
-  
+
     // Set cooldown 1 hour
     const cooldown = 60 * 60 * 1000;
     const userData = dataManager.users[message.author.id] || {};
     const lastUsed = userData.lastBugReport;
-  
+
     if (lastUsed && Date.now() - lastUsed < cooldown) {
       const timeRemaining = cooldown - (Date.now() - lastUsed);
       return message.reply(
-        `Please wait ${formatClockHHMMSS(timeRemaining)} before using this command again.`
+        `Please wait ${formatClockHHMMSS(
+          timeRemaining
+        )} before using this command again.`
       );
     }
-  
+
     // Update user data
     if (!dataManager.users[message.author.id]) {
       dataManager.users[message.author.id] = {};
     }
     dataManager.users[message.author.id].lastBugReport = Date.now();
-  
+
     const bug = args.slice(1).join(" ");
     if (!bug) {
-      return message.reply(`${discordEmotes.error} Please provide a bug report.`);
+      return message.reply(
+        `${discordEmotes.error} Please provide a bug report.`
+      );
     }
-  
+
     await discordFormat.bugReport(message, bug);
   },
   loop: async (message, args) => {
@@ -302,42 +326,108 @@ const commands = {
     const jawab = args[1] === "jawab";
     await gamesManagement.cakLontong(message, guess, jawab);
   },
-  fisch: async (message, args) => {
+
+  fischae: async (message, args) => {
     try {
-      const psLocation = args[1];
-      const eventInfo = args.slice(2).join(" ")
-      const getRole = message.guild.roles.cache.get(config.fischRoleInfoID);
-      const embed = 
-        {
-          title: "🎮 Private Server Event Information",
-          color: 0xE74C3C,
-          description: `📢 An **Event** has just started!\nJoin **${psLocation.toUpperCase()}** and make sure not to miss **${eventInfo.toUpperCase()}**!`,
-          fields: [
-            { name: "🕹️ Location", value: `**${psLocation.toUpperCase()}**`, inline: true },
-            { name: "🎉 Event", value: `**${eventInfo.toUpperCase()}**`, inline: true }
-          ],
-          footer: {
-            text: message.author.tag,
-            icon_url: message.author.displayAvatarURL()
-          },
-          timestamp: new Date()
-        }
-      if(psLocation.toLowerCase() === "" || eventInfo.toLowerCase() === "" || !psLocation || !eventInfo) {
-        return message.reply("usage : @fanmotion fisch <ps1/ps2> <event info>");
-      }
-     
-      else if (psLocation.toLowerCase().trim() !== "ps1" && psLocation.toLowerCase().trim() !== "ps2") {
-        return message.reply("usage : @fanmotion fisch <ps1/ps2> <event info>");
-      }
-    const targetChannel = message.client.channels.cache.get(config.fischPSInfoChannelID);
-    if (targetChannel) await targetChannel.send({
-      content: `${getRole} ${psLocation.toUpperCase()} - ${eventInfo.toUpperCase()}`,
-      embeds: [embed]
-    });
-    else await message.channel.send("Target channel not found.");
+      // delete message author to keep channel clean
+      await message.delete();
+      const eventInfo = args.slice(1).join(" ");
+      const officialGuildId = config.guildBaseServerID;
+      const guild = client.guilds.cache.get(officialGuildId);
+      const getRole = guild.roles.cache.get(config.fischRoleInfoID);
+      const embed = new EmbedBuilder()
+  .setTitle("🎮 Global Server Event Information")
+  .setColor(0x2ecc71)
+  .setDescription(`📢 A **Global Event** has just started! make sure not to miss **${eventInfo.toUpperCase()}**!`)
+  .addFields(
+    { name: "🎉 Event", value: `**${eventInfo.toUpperCase()}**`, inline: true },
+  )
+  .setFooter({ text: message.author.tag, iconURL: message.author.displayAvatarURL() })
+  .setTimestamp();
+
+      if (eventInfo.toLowerCase() === "" || !eventInfo) {
+        return message.reply(
+          "usage : @fanmotion/FM fischae <ps1/ps2> <event info>"
+        );
+      } 
+      const targetChannel = message.client.channels.cache.get(
+        config.fischPSInfoChannelID
+      );
+      if (targetChannel)
+        await targetChannel.send({
+          content: `${getRole}\n#  **📢 A Global Server Event** - **${eventInfo.toUpperCase()}**\n> Link to PS: <#1435601258135290069>`,
+          embeds: [embed]
+        });
+      else await message.channel.send("Target channel not found.");
     } catch (error) {
       console.error("Error sending private server event info:", error);
-      await message.reply("An error occurred while sending the event information.");
+      await message.reply(
+        "An error occurred while sending the event information."
+      );
+    }
+  },
+  fisch: async (message, args) => {
+    try {
+      // delete message author to keep channel clean
+      await message.delete();
+      const psLocation = args[1];
+      const eventInfo = args.slice(2).join(" ");
+      const officialGuildId = config.guildBaseServerID;
+      const guild = client.guilds.cache.get(officialGuildId);
+      const getRole = guild.roles.cache.get(config.fischRoleInfoID);
+      const embed = {
+        title: "🎮 Private Server Event Information",
+        color: 0xe74c3c,
+        description: `📢 An **Event** has just started!\nJoin **${psLocation.toUpperCase()}** and make sure not to miss **${eventInfo.toUpperCase()}**!`,
+        fields: [
+          {
+            name: "🕹️ Location",
+            value: `**${psLocation.toUpperCase()}**`,
+            inline: true,
+          },
+          {
+            name: "🎉 Event",
+            value: `**${eventInfo.toUpperCase()}**`,
+            inline: true,
+          },
+        ],
+        footer: {
+          text: message.author.tag,
+          icon_url: message.author.displayAvatarURL(),
+        },
+        timestamp: new Date(),
+      };
+      if (
+        psLocation.toLowerCase() === "" ||
+        eventInfo.toLowerCase() === "" ||
+        !psLocation ||
+        !eventInfo
+      ) {
+        return message.reply(
+          "usage : @fanmotion/FM fisch <ps1/ps2> <event info>"
+        );
+      } else if (
+        psLocation.toLowerCase().trim() !== "ps1" &&
+        psLocation.toLowerCase().trim() !== "ps2"
+      ) {
+        return message.reply(
+          "usage : @fanmotion/FM fisch <ps1/ps2> <event info>"
+        );
+      }
+      const targetChannel = message.client.channels.cache.get(
+        config.fischPSInfoChannelID
+      );
+      if (targetChannel)
+        await targetChannel.send({
+          content: `${getRole}\n# **${psLocation.toUpperCase()}** - **${eventInfo.toUpperCase()}**\n> Link to PS: <#1435601258135290069>`,
+          embeds: [embed],
+        });
+      else await message.channel.send("Target channel not found.");
+    } catch (error) {
+      console.error("Error sending private server event info:", error);
+      await message.reply(
+        "An error occurred while sending the event information."
+      );
     }
   },
   ga: async (message, args) => {
@@ -375,7 +465,7 @@ const commands = {
       return message.reply(
         `${discordEmotes.error} Image not found! Make sure:\n` +
           "1. The uploaded file is an image\n" +
-          "2. The image format is supported (JPG, PNG, WEBP)"
+          "2. The image format is supported (JPG/JPEG, PNG, WEBP)"
       );
     }
 
@@ -445,13 +535,13 @@ const commands = {
   sf: async (message, args) => {
     await voiceManager.shuffleMusic(message);
   },
-  clearwarns: async (message, args) => {
-    if (!guildAdmin(message)) return;
-    const userId = message.mentions.users.first();
-    const guildId = message.guild.id;
-    if (!userId) return message.reply("Please mention a valid user.");
-    await discordFormat.clearWarns(guildId,userId,message);
-  },
+  // clearwarns: async (message, args) => {
+  //   if (!guildAdmin(message)) return;
+  //   const userId = message.mentions.users.first();
+  //   const guildId = message.guild.id;
+  //   if (!userId) return message.reply("Please mention a valid user.");
+  //   await discordFormat.clearWarns(guildId,userId,message);
+  // },
   p: async (message, args) => {
     const q = args.slice(1).join(" ");
     if (args.length < 2 || !q)
@@ -515,23 +605,40 @@ const commands = {
   setbalance: async (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
     if (args.length < 3) {
-      return message.reply({content :`Usage: ${prefix}setbalance <user> <amount>`, ephemeral: true});
+      return message.reply({
+        content: `Usage: ${prefix}setbalance <user> <amount>`,
+        ephemeral: true,
+      });
     }
     const user = message.mentions.users.first();
     const getUser = dataManager.getUser(user.id);
-    if(!getUser) {
-      return message.reply({content:`${discordEmotes.error} User not found. please register them first!`, ephemeral: true});
+    if (!getUser) {
+      return message.reply({
+        content: `${discordEmotes.error} User not found. please register them first!`,
+        ephemeral: true,
+      });
     }
     const amount = parseInt(args[2]);
     if (isNaN(amount) || amount <= 0) {
-      return message.reply({content:`${discordEmotes.error} Please enter a valid amount.`, ephemeral: true});
+      return message.reply({
+        content: `${discordEmotes.error} Please enter a valid amount.`,
+        ephemeral: true,
+      });
     }
     try {
       dataManager.setBalance(user, amount);
-      message.reply({content:`${discordEmotes.success} ${user}'s balance has been set to ${formatBalance(amount)}.`, ephemeral: true});
+      message.reply({
+        content: `${
+          discordEmotes.success
+        } ${user}'s balance has been set to ${formatBalance(amount)}.`,
+        ephemeral: true,
+      });
     } catch (error) {
       console.error("Error in setBalance command:", error);
-      message.reply({content:`${discordEmotes.error} An error occurred while processing the command.`, ephemeral: true});
+      message.reply({
+        content: `${discordEmotes.error} An error occurred while processing the command.`,
+        ephemeral: true,
+      });
     }
   },
   resetap: async (message, args) => {
@@ -565,9 +672,13 @@ const commands = {
       return message.reply("User already registered!");
     }
     const user = dataManager.createUser(mention.id);
-    return message.reply(`Welcome! ${mention}! Your balance start with ${formatBalance(user.balance)}.`);
+    return message.reply(
+      `Welcome! ${mention}! Your balance start with ${formatBalance(
+        user.balance
+      )}.`
+    );
   },
-  giveawayall:(message, args)=>{
+  giveawayall: (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
     const balance = args[1];
     const convertedBalance = parseInt(balance);
@@ -588,18 +699,21 @@ const commands = {
     await dataManager.resetAllBalance(message);
   },
   kick: async (message, args) => {
-
     // cek permission
-    if (!guildAdmin(message)) return
-    ;
-    if (args.length < 2) { 
+    if (!guildAdmin(message)) return;
+    if (args.length < 2) {
       return message.reply(`Usage: ${prefix}kick <@user> <reason>`);
     }
     const reason = args.slice(2).join(" ");
-    if(!reason) return message.reply(`${discordEmotes.error} Please provide a reason for the kick.`);
+    if (!reason)
+      return message.reply(
+        `${discordEmotes.error} Please provide a reason for the kick.`
+      );
     const mentionedUser = message.mentions.users.first();
     if (!mentionedUser) {
-      return message.reply(`${discordEmotes.error} Please mention a user to kick.`);
+      return message.reply(
+        `${discordEmotes.error} Please mention a user to kick.`
+      );
     }
     try {
       await discordFormat.kickUser(message, mentionedUser, reason);
@@ -609,13 +723,15 @@ const commands = {
     }
   },
   purge: async (message, args) => {
-    if(!guildAdmin(message)) return;
+    if (!guildAdmin(message)) return;
     const amount = parseInt(args[1]);
-    if (!amount || amount <= 0 ) {
+    if (!amount || amount <= 0) {
       return message.reply(`Usage: ${prefix}purge <amount>`);
     }
-    if(amount > 100) {
-      return message.reply(`You can't purge that much messages! Max 100 messages.`);
+    if (amount > 100) {
+      return message.reply(
+        `You can't purge that much messages! Max 100 messages.`
+      );
     }
     try {
       await discordFormat.deleteMessages(message, amount);
@@ -649,8 +765,9 @@ const commands = {
     return Games.numberGuess(message, bet, guess);
   },
   nick: (message, args) => {
-    if(!guildAdmin(message)) return;
-    if(args.length < 3) return message.reply(`Usage: ${prefix}nick <@user> <new nickname>`);
+    if (!guildAdmin(message)) return;
+    if (args.length < 3)
+      return message.reply(`Usage: ${prefix}nick <@user> <new nickname>`);
     const mention = message.mentions.users.first();
     const newNick = args.slice(2).join(" ");
     if (!mention || !newNick) {
@@ -667,17 +784,21 @@ const commands = {
     return Games.diceRoll(message, bet, guess);
   },
   invite: (message) => {
-   return discordFormat.inviteBot(message);
+    return discordFormat.inviteBot(message);
   },
   setstatus: (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
     const mode = args[1];
     if (!mode) {
-      return message.reply(`Usage: ${prefix}setstatus <online | idle | dnd | invisible>  <listening | watching | playing | streaming> <status>`);
+      return message.reply(
+        `Usage: ${prefix}setstatus <online | idle | dnd | invisible>  <listening | watching | playing | streaming> <status>`
+      );
     }
     const type = args[2];
     if (!["listening", "watching", "playing", "streaming"].includes(type)) {
-      return message.reply(`Usage: ${prefix}setstatus <online | idle | dnd | invisible> <listening | watching | playing | streaming> <status>`);
+      return message.reply(
+        `Usage: ${prefix}setstatus <online | idle | dnd | invisible> <listening | watching | playing | streaming> <status>`
+      );
     }
     const status = args.slice(3).join(" ");
     if (!status) {
@@ -687,7 +808,7 @@ const commands = {
       console.error("Client user is undefined. Is the bot logged in?");
       return message.reply("Bot is not connected to Discord.");
     }
-    return discordFormat.setBotStatus(client,mode, type, status, message);
+    return discordFormat.setBotStatus(client, mode, type, status, message);
   },
   setprefix: (message, args) => {
     if (!ownerHelperFirewall(message.author.id, message)) return;
@@ -698,7 +819,7 @@ const commands = {
     prefix = newPrefix;
     return message.reply(`Prefix set to: ${prefix}`);
   },
-  joinanonim:async (message) => {
+  joinanonim: async (message) => {
     try {
       await anonChat.joinSession(message);
     } catch (error) {
@@ -728,7 +849,7 @@ const commands = {
     try {
       // Save a reference to the original message
       const originalMessage = message;
-      
+
       // Try to delete the command message but handle potential errors
       try {
         await message.delete();
@@ -745,7 +866,7 @@ const commands = {
         return;
       }
 
-      const amount = parseInt(args[1]); 
+      const amount = parseInt(args[1]);
       if (isNaN(amount) || amount < 1) {
         const tempMsg = await originalMessage.channel.send(
           "Please provide a valid amount (minimum 1)"
@@ -757,16 +878,11 @@ const commands = {
       const targetChannel = originalMessage.mentions.channels.first();
       const targetUser = originalMessage.mentions.users.first();
       const target = targetChannel || targetUser;
-      const text = args.slice(2).join(" "); 
+      const text = args.slice(2).join(" ");
       console.log("Target:", target);
       console.log("Text:", text);
       console.log("Amount:", amount);
-      return discordFormat.spamSendTo(
-        target,
-        text,
-        amount,
-        originalMessage
-      );
+      return discordFormat.spamSendTo(target, text, amount, originalMessage);
     } catch (error) {
       console.error("Error in spamsendto command:", error);
       const errorMsg = await message.channel.send(
@@ -780,33 +896,41 @@ const commands = {
     try {
       // Delete the command message
       await message.delete().catch(console.error);
-      
+
       if (args.length < 2) {
-        const tempMsg = await message.channel.send(`Usage: ${prefix}spamsay <amount> <message>`);
+        const tempMsg = await message.channel.send(
+          `Usage: ${prefix}spamsay <amount> <message>`
+        );
         setTimeout(() => tempMsg.delete().catch(console.error), 5000);
         return;
       }
-      
+
       const amount = Number(args[1]);
       const text = args.slice(2).join(" ");
-      
+
       if (!text) {
-        const tempMsg = await message.channel.send("Please provide a message to send.");
+        const tempMsg = await message.channel.send(
+          "Please provide a message to send."
+        );
         setTimeout(() => tempMsg.delete().catch(console.error), 5000);
         return;
       }
-      
+
       if (isNaN(amount) || amount < 1) {
-        const tempMsg = await message.channel.send("Please provide a valid amount (minimum 1).");
+        const tempMsg = await message.channel.send(
+          "Please provide a valid amount (minimum 1)."
+        );
         setTimeout(() => tempMsg.delete().catch(console.error), 5000);
         return;
       }
-      
+
       // Call the spamSay function with the correct text
       return discordFormat.spamSay(message, text, amount);
     } catch (error) {
       console.error("Error in spamsay command:", error);
-      const tempMsg = await message.channel.send("An error occurred while executing the command.");
+      const tempMsg = await message.channel.send(
+        "An error occurred while executing the command."
+      );
       setTimeout(() => tempMsg.delete().catch(console.error), 5000);
     }
   },
@@ -829,7 +953,7 @@ const commands = {
     }
   },
   botinfo: async (message) => {
-    await discordFormat.nanamiBotInfo(client,message);
+    await discordFormat.nanamiBotInfo(client, message);
   },
   hostinginfo: async (message) => {
     await discordFormat.nanamiHostingInfo(client, message);
@@ -848,10 +972,7 @@ const commands = {
       return message.reply(`Usage: ${prefix}giveowner <amount>`);
     }
 
-    if (
-      amount >
-      1000000000000000
-    ) {
+    if (amount > 1000000000000000) {
       return message.reply(`You can't give that much money!`);
     }
 
@@ -889,7 +1010,7 @@ const commands = {
   },
   give: async (message, args) => {
     const targetUser = message.mentions.users.first();
-    const amount = parseInt(args[2]); 
+    const amount = parseInt(args[2]);
 
     // Basic input validation
     if (!targetUser || !amount || amount <= 0) {
@@ -902,14 +1023,7 @@ const commands = {
     }
 
     try {
-      await dataManager.giveMoney(
-        message.author,
-        targetUser,
-        amount,
-        message
-      );
-
-      
+      await dataManager.giveMoney(message.author, targetUser, amount, message);
     } catch (error) {
       console.error("Error in give command:", error);
       return message.reply("An error occurred while processing the command.");
@@ -918,7 +1032,9 @@ const commands = {
   announcement: async (message, args) => {
     // Cek permission
     if (message.author.id !== config.ownerId[0])
-      return message.reply(`${discordEmotes.error} You don't have permission to use this command!`);
+      return message.reply(
+        `${discordEmotes.error} You don't have permission to use this command!`
+      );
     // Cek jika tidak ada pesan yang akan diumumkan
     if (!args.length) {
       return message.reply(
@@ -945,14 +1061,7 @@ const commands = {
     }
 
     try {
-      await dataManager.takeMoney(
-        message.author,
-        targetUser,
-        amount,
-        message
-      );
-
-      
+      await dataManager.takeMoney(message.author, targetUser, amount, message);
     } catch (error) {
       if (error.message === "Target user does not have an account!") {
         return message.reply(
@@ -986,7 +1095,7 @@ const commands = {
     }
   },
   lock: async (message) => {
-    if(!guildAdmin(message)) return;
+    if (!guildAdmin(message)) return;
     try {
       await discordFormat.lockChannel(message);
     } catch (error) {
@@ -994,7 +1103,7 @@ const commands = {
     }
   },
   unlock: async (message) => {
-    if(!guildAdmin(message)) return;
+    if (!guildAdmin(message)) return;
     try {
       await discordFormat.unlockChannel(message);
     } catch (error) {
@@ -1048,7 +1157,7 @@ const commands = {
   },
 
   disablewelcome: async (message) => {
-    if(!guildAdmin(message)) return;
+    if (!guildAdmin(message)) return;
     try {
       await discordFormat.disableWelcome(message.guild.id, message);
     } catch (error) {
@@ -1108,7 +1217,10 @@ const commands = {
   },
   daily: (message) => {
     const userData = dataManager.getUser(message.author.id);
-    if(!userData) return message.reply(`You don't have an account yet!, use ${config.defaultPrefix}register`);
+    if (!userData)
+      return message.reply(
+        `You don't have an account yet!, use ${config.defaultPrefix}register`
+      );
     const setCD = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
     const now = Date.now();
     const lastDaily = userData.stats.lastDaily;
@@ -1155,42 +1267,46 @@ const commands = {
     }
   },
   tw: async (message) => {
-    if(!guildAdmin(message)) return;
-    
-    try {
-        // Get the first mentioned user or use the message author if no mention
-        const mentionedUser = message.mentions.users.first() || message.author;
+    if (!guildAdmin(message)) return;
 
-        // Call sendWelcomeMessage with test mode enabled
-        await guildManagement.sendWelcomeMessage(
-            client, 
-            message.guild.id, 
-            mentionedUser, 
-            true,  // Enable test mode
-            message
-        );
+    try {
+      // Get the first mentioned user or use the message author if no mention
+      const mentionedUser = message.mentions.users.first() || message.author;
+
+      // Call sendWelcomeMessage with test mode enabled
+      await guildManagement.sendWelcomeMessage(
+        client,
+        message.guild.id,
+        mentionedUser,
+        true, // Enable test mode
+        message
+      );
     } catch (error) {
-        console.error("Error in welcome test command:", error);
-        return message.reply("An error occurred while testing the welcome message.");
+      console.error("Error in welcome test command:", error);
+      return message.reply(
+        "An error occurred while testing the welcome message."
+      );
     }
   },
   tl: async (message) => {
-    if(!guildAdmin(message)) return;
+    if (!guildAdmin(message)) return;
     try {
-        // Get the first mentioned user or use the message author if no mention
-        const mentionedUser = message.mentions.users.first() || message.author;
+      // Get the first mentioned user or use the message author if no mention
+      const mentionedUser = message.mentions.users.first() || message.author;
 
-        // Call sendWelcomeMessage with test mode enabled
-        await guildManagement.sendLeaveMessage(
-            client, 
-            message.guild.id, 
-            mentionedUser, 
-            true,  // Enable test mode
-            message
-        );        
+      // Call sendWelcomeMessage with test mode enabled
+      await guildManagement.sendLeaveMessage(
+        client,
+        message.guild.id,
+        mentionedUser,
+        true, // Enable test mode
+        message
+      );
     } catch (error) {
-        console.error("Error in leave test command:", error);
-        return message.reply("An error occurred while testing the leave message.");
+      console.error("Error in leave test command:", error);
+      return message.reply(
+        "An error occurred while testing the leave message."
+      );
     }
   },
   swr: async (message) => {
@@ -1214,15 +1330,17 @@ const commands = {
     discordFormat.disableLeaveMessage(message.guild.id, message);
     return message.reply(`${discordEmotes.success} Leave message removed.`);
   },
-  generateimg: (message, args)=>{
-    if(args.length < 2) return message.reply(`Usage: ${prefix}generateimg <prompt>`);
+  generateimg: (message, args) => {
+    if (args.length < 2)
+      return message.reply(`Usage: ${prefix}generateimg <prompt>`);
     const prompt = args.slice(1).join(" ");
     return apiManagement.generateImage(message, prompt);
   },
   to: async (message, args) => {
     if (!guildAdmin(message)) return;
     // timeout user
-    if(args.length < 4) return message.reply(`Usage: ${prefix}to <user> <minutes> <reason>`);
+    if (args.length < 4)
+      return message.reply(`Usage: ${prefix}to <user> <minutes> <reason>`);
     const user = message.mentions.users.first();
     if (!user) return message.reply("Please mention a valid user.");
     const time = parseInt(args[2]);
@@ -1230,16 +1348,21 @@ const commands = {
       return message.reply("Please provide a valid number of minutes (1-60).");
     }
     const reason = args.slice(3).join(" ");
-    if (!reason) return message.reply("Please provide a reason for the timeout.");
+    if (!reason)
+      return message.reply("Please provide a reason for the timeout.");
     await discordFormat.timeoutUser(message, user.id, time, reason);
   },
   nc: async (message, args) => {
     try {
       // Check if the user is authorized to use this command
-      if(message.author.id !== config.ownerId[0]) return message.reply("You don't have permission to use this command.");
-      
+      if (message.author.id !== config.ownerId[0])
+        return message.reply("You don't have permission to use this command.");
+
       const splitted = args.slice(1).join(" ").split("|");
-      if(splitted.length < 2) return message.reply(`${discordEmotes.error} usage : ${config.defaultPrefix}nc <commands> | <description.`);
+      if (splitted.length < 2)
+        return message.reply(
+          `${discordEmotes.error} usage : ${config.defaultPrefix}nc <commands> | <description.`
+        );
       const newCommands = splitted[0];
       const description = splitted[1];
       if (!description || !newCommands) {
@@ -1247,7 +1370,11 @@ const commands = {
           `${discordEmotes.error} Please provide a description for the new commands.`
         );
       }
-      await discordFormat.newCommandAnnouncement(message, newCommands, description);
+      await discordFormat.newCommandAnnouncement(
+        message,
+        newCommands,
+        description
+      );
     } catch (error) {
       console.error("Error in 'ga' command:", error);
       await message.reply(
@@ -1255,29 +1382,30 @@ const commands = {
       );
     }
   },
-  setvoicelogs :async (message, args) => {
-    if(!guildAdmin(message)) return;
+  setvoicelogs: async (message, args) => {
+    if (!guildAdmin(message)) return;
     const guildId = message.guild.id;
     const channelMention = message.mentions.channels.first();
-    if (!channelMention) return message.reply("Please mention a valid channel.");
+    if (!channelMention)
+      return message.reply("Please mention a valid channel.");
     await guildManagement.setVoiceLogs(guildId, channelMention.id, message);
   },
-  disablevoicelogs :async (message, args) => {
-    if(!guildAdmin(message)) return;
+  disablevoicelogs: async (message, args) => {
+    if (!guildAdmin(message)) return;
     const guildId = message.guild.id;
     await guildManagement.disableVoiceLogs(guildId);
   },
-  giveloli: async(message, args) => {
+  giveloli: async (message, args) => {
     return await apiManagement.generateLoli(message);
   },
-  giveukhty: async(message, args) => {
+  giveukhty: async (message, args) => {
     return await apiManagement.generateUkhty(message);
   },
-  givewaifu: async(message, args) => {
+  givewaifu: async (message, args) => {
     return await apiManagement.generateWaifu(message);
   },
   transcribeyt: async (message, args) => {
-    const ytLink = args[1]
+    const ytLink = args[1];
     // regex yt link
     const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
     if (!regex.test(ytLink)) {
@@ -1286,11 +1414,15 @@ const commands = {
     return await apiManagement.transcribeYT(message, ytLink);
   },
   resetrepo: async (message) => {
-    if (message.author.id !== config.ownerId[0]) return message.reply("You don't have permission to use this command.");  
+    if (message.author.id !== config.ownerId[0])
+      return message.reply("You don't have permission to use this command.");
     return await githubCron.resetPublicUploads();
   },
-  dprofile: async(message, args) => {
-    if (args.length < 1) return message.reply(`${discordEmotes.error} Usage: ${prefix}dprofile <@user?>`);
+  dprofile: async (message, args) => {
+    if (args.length < 1)
+      return message.reply(
+        `${discordEmotes.error} Usage: ${prefix}dprofile <@user?>`
+      );
     let user = message.mentions.users.first();
     if (!user) user = message.author;
     return await discordFormat.discordProfileDetail(message, user);
@@ -1303,11 +1435,11 @@ const commands = {
   backup: async (message) => {
     if (message.author.id !== config.ownerId[0]) return;
     await backupManager.startBackup();
-  }
-}
+  },
+};
 
 // Event Handlers
-client.once("ready", async () => {
+client.once("clientReady", async () => {
   // Jalankan sekali saat bot pertama kali start
   (async () => {
     console.log("Running GithubCron commit on startup...");
@@ -1320,15 +1452,15 @@ client.once("ready", async () => {
     console.log("Running scheduled GithubCron commit...");
     await githubCron.startCommit();
     backupManager.startBackup();
-}, 11 * 60 * 60 * 1000); 
+  }, 11 * 60 * 60 * 1000);
 
   await slashCommands.setupSlashCommands();
-    
+
   // Setup event listener untuk interaksi
-  client.on('interactionCreate', async interaction => {
-      await slashCommands.handleInteraction(interaction);
+  client.on("interactionCreate", async (interaction) => {
+    await slashCommands.handleInteraction(interaction);
   });
-  guildManagement.setClient(client)
+  guildManagement.setClient(client);
   anonChat.setClient(client);
   console.log(`Bot logged in as ${client.user.tag}`);
   let toggle = true;
@@ -1340,7 +1472,14 @@ client.once("ready", async () => {
       });
     } else {
       client.user.setPresence({
-        activities: [{ name: "https://linktr.ee/ipanks69", type: 1,state: "FanMotion", url: "https://linktr.ee/ipanks69" }], // STREAMING
+        activities: [
+          {
+            name: "https://linktr.ee/ipanks69",
+            type: 1,
+            state: "FanMotion",
+            url: "https://linktr.ee/ipanks69",
+          },
+        ], // STREAMING
         status: "online",
       });
     }
@@ -1348,29 +1487,40 @@ client.once("ready", async () => {
   }, 5000); // Ubah status setiap 5 detik
 
   // Configure player and load extractors
-  const soundcloudExtractorPlayer = await player.extractors.register(SoundcloudExtractor, {});
-  
-  const spotifyExtractorPlayer = await player.extractors.register(SpotifyExtractor, {
-    clientId: process.env.SPOTIFY_CLIENT_ID,
-    clientSecret: process.env.SPOTIFY_CLIENT_SECRET
-  });
-  const youtubeExtractorPlayer = await player.extractors.register(YoutubeExtractor, {
-    cookie: process.env.YT_COOKIE || null,
-    filterAutoplayTracks: true, // enabled by default
-    disableYTJSLog: true, // silence youtubei.js logs
-  });
-  
+  const soundcloudExtractorPlayer = await player.extractors.register(
+    SoundcloudExtractor,
+    {}
+  );
+
+  const spotifyExtractorPlayer = await player.extractors.register(
+    SpotifyExtractor,
+    {
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    }
+  );
+  const youtubeExtractorPlayer = await player.extractors.register(
+    YoutubeExtractor,
+    {
+      cookie: process.env.YT_COOKIE || null,
+      filterAutoplayTracks: true, // enabled by default
+      disableYTJSLog: true, // silence youtubei.js logs
+    }
+  );
+
   soundcloudExtractorPlayer.priority = 1;
   spotifyExtractorPlayer.priority = 2;
   youtubeExtractorPlayer.priority = 3;
 
- player.events.on("emptyChannel", (queue) => {
+  player.events.on("emptyChannel", (queue) => {
     // Emitted when the voice channel is empty
     if (queue.metadata.channel) {
-      queue.metadata.channel.send("👋 Voice channel is empty, leaving the channel...");
+      queue.metadata.channel.send(
+        "👋 Voice channel is empty, leaving the channel..."
+      );
     }
   });
-  
+
   player.events.on("debug", async (queue, message) => {
     console.log(`Player debug event: ${message}`);
   });
@@ -1411,14 +1561,12 @@ client.once("ready", async () => {
       queue.metadata.channel.send("👋 Disconnected from voice channel");
     }
   });
-  
 });
 
 client.on("guildMemberAdd", async (member) => {
   guildManagement.applyWelcomeRole(member.guild.id, member);
   guildManagement.sendWelcomeMessage(client, member.guild.id, member);
 });
-
 
 const voiceJoinLogs = new Map();
 
@@ -1430,137 +1578,154 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   let wasForced = false;
 
   // Check for a recent MEMBER_DISCONNECT audit log
-  if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+  if (
+    oldState.channelId &&
+    newState.channelId &&
+    oldState.channelId !== newState.channelId
+  ) {
     try {
       const auditLogs = await newState.guild.fetchAuditLogs({
         limit: 1,
         type: 24,
       });
-      
+
       const moveLog = auditLogs.entries.first();
-      
+
       // Check if this log is recent (within the last 5 seconds) and for this user
-      if (moveLog && 
-          moveLog.target.id === user.id && 
-          moveLog.createdTimestamp > Date.now() - 5000) {
+      if (
+        moveLog &&
+        moveLog.target.id === user.id &&
+        moveLog.createdTimestamp > Date.now() - 5000
+      ) {
         mover = moveLog.executor;
         wasForced = true;
       }
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      console.error("Error fetching audit logs:", error);
     }
   }
 
   // User joined a voice channel
   if (!oldState.channelId && newState.channelId) {
     const channelName = newState.channel.name;
-    const key = `${user.id}-${newState.channelId}`; 
+    const key = `${user.id}-${newState.channelId}`;
     voiceJoinLogs.set(key, Date.now());
-    
+
     const embed = {
-      color: 0x2ECC71, // Green color
-      title: '📥 Voice Channel Joined',
+      color: 0x2ecc71, // Green color
+      title: "📥 Voice Channel Joined",
       thumbnail: {
         url: user.user.displayAvatarURL({ dynamic: true }),
       },
       description: `**${user.user.tag}** has joined <#${newState.channelId}>  !`,
       fields: [
         {
-          name: 'Channel Members',
+          name: "Channel Members",
           value: `${newState.channel.members.size} members`,
           inline: true,
-        }
+        },
       ],
       timestamp: new Date(),
     };
-    
+
     // Add status info if any special status exists
-    if (newState.mute || newState.deaf || newState.selfMute || 
-        newState.selfDeaf || newState.selfVideo || newState.streaming) {
-      
+    if (
+      newState.mute ||
+      newState.deaf ||
+      newState.selfMute ||
+      newState.selfDeaf ||
+      newState.selfVideo ||
+      newState.streaming
+    ) {
       let statusInfo = [];
-      if (newState.mute) statusInfo.push('🔇 Server Muted');
-      if (newState.deaf) statusInfo.push('🔇 Server Deafened');
-      if (newState.selfMute) statusInfo.push('🎙️ Self Muted');
-      if (newState.selfDeaf) statusInfo.push('🎧 Self Deafened');
-      if (newState.selfVideo) statusInfo.push('📹 Camera On');
-      if (newState.streaming) statusInfo.push('🖥️ Streaming');
-      
+      if (newState.mute) statusInfo.push("🔇 Server Muted");
+      if (newState.deaf) statusInfo.push("🔇 Server Deafened");
+      if (newState.selfMute) statusInfo.push("🎙️ Self Muted");
+      if (newState.selfDeaf) statusInfo.push("🎧 Self Deafened");
+      if (newState.selfVideo) statusInfo.push("📹 Camera On");
+      if (newState.streaming) statusInfo.push("🖥️ Streaming");
+
       embed.fields.push({
-        name: 'Status',
-        value: statusInfo.join('\n'),
+        name: "Status",
+        value: statusInfo.join("\n"),
         inline: false,
       });
     }
-    
+
     await guildManagement.sendVoiceLogs(
-      client, 
-      guildId, 
-      user, 
+      client,
+      guildId,
+      user,
       `joined ${channelName}`,
       embed
     );
   }
-  
+
   // User left a voice channel
   else if (oldState.channelId && !newState.channelId) {
     const channelName = oldState.channel.name;
     const key = `${user.id}-${oldState.channelId}`; // Ubah oldState.id menjadi user.id agar konsisten
     const joinTime = voiceJoinLogs.get(key);
-    
-    const duration = joinTime ? (Date.now() - joinTime) : null;
+
+    const duration = joinTime ? Date.now() - joinTime : null;
     voiceJoinLogs.delete(key);
-    
+
     // Format duration to hours:minutes:seconds
-    let formattedDuration = 'Unknown';
+    let formattedDuration = "Unknown";
     if (duration) {
       const seconds = Math.floor(duration / 1000) % 60;
       const minutes = Math.floor(duration / (1000 * 60)) % 60;
       const hours = Math.floor(duration / (1000 * 60 * 60));
-      formattedDuration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      formattedDuration = `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     }
-    
+
     const embed = {
-      color: 0xE74C3C, // Red color
-      title: '📤 Voice Channel Left',
+      color: 0xe74c3c, // Red color
+      title: "📤 Voice Channel Left",
       thumbnail: {
         url: user.user.displayAvatarURL({ dynamic: true }),
       },
       description: `**${user.user.tag}** has left <#${oldState.channelId}>!`,
       fields: [
         {
-          name: 'Duration in Channel',
+          name: "Duration in Channel",
           value: formattedDuration,
           inline: true,
         },
         {
-          name: 'Channel Members',
+          name: "Channel Members",
           value: `${oldState.channel.members.size} members left`,
           inline: true,
-        }
+        },
       ],
       timestamp: new Date(),
     };
-    
+
     await guildManagement.sendVoiceLogs(
-      client, 
-      guildId, 
-      user, 
+      client,
+      guildId,
+      user,
       `left ${channelName}`,
       embed
     );
   }
-  
+
   // User moved from one voice channel to another
-  else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+  else if (
+    oldState.channelId &&
+    newState.channelId &&
+    oldState.channelId !== newState.channelId
+  ) {
     const oldChannelName = oldState.channel.name;
     const newChannelName = newState.channel.name;
-    
+
     // Tangani waktu bergabung saat berpindah channel
     const oldKey = `${user.id}-${oldState.channelId}`;
     const newKey = `${user.id}-${newState.channelId}`;
     const joinTime = voiceJoinLogs.get(oldKey);
-    
+
     // Pindahkan waktu bergabung ke channel baru jika tersedia
     if (joinTime) {
       voiceJoinLogs.delete(oldKey);
@@ -1569,94 +1734,115 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       // Jika tidak ada waktu bergabung, buat baru
       voiceJoinLogs.set(newKey, Date.now());
     }
-    
+
     let description = `**${user.user.tag}** has moved from <#${oldState.channelId}> to <#${newState.channelId}>!`;
-    
+
     if (wasForced && mover) {
       description = `**${user.user.tag}** was moved by **${mover.tag}** from <#${oldState.channelId}> to <#${newState.channelId}>!`;
     }
-    
+
     const embed = {
-      color: wasForced ? 0xF39C12 : 0x3498DB, // Orange for forced, Blue for voluntary
-      title: wasForced ? '📝 User Forcibly Moved' : '🔄 Voice Channel Moved',
+      color: wasForced ? 0xf39c12 : 0x3498db, // Orange for forced, Blue for voluntary
+      title: wasForced ? "📝 User Forcibly Moved" : "🔄 Voice Channel Moved",
       thumbnail: {
         url: user.user.displayAvatarURL({ dynamic: true }),
       },
       description: description,
       timestamp: new Date(),
     };
-    
+
     await guildManagement.sendVoiceLogs(
-      client, 
-      guildId, 
-      user, 
-      wasForced ? 
-        `was moved from ${oldChannelName} to ${newChannelName} by ${mover ? mover.tag : 'a moderator'}` : 
-        `moved from ${oldChannelName} to ${newChannelName}`,
+      client,
+      guildId,
+      user,
+      wasForced
+        ? `was moved from ${oldChannelName} to ${newChannelName} by ${
+            mover ? mover.tag : "a moderator"
+          }`
+        : `moved from ${oldChannelName} to ${newChannelName}`,
       embed
     );
   }
-  
+
   // User changed their audio/video settings
-  else if (oldState.channelId && newState.channelId && oldState.channelId === newState.channelId) {
+  else if (
+    oldState.channelId &&
+    newState.channelId &&
+    oldState.channelId === newState.channelId
+  ) {
     // Check for changes in audio/video states
-    if (oldState.mute !== newState.mute || 
-        oldState.deaf !== newState.deaf ||
-        oldState.selfMute !== newState.selfMute || 
-        oldState.selfDeaf !== newState.selfDeaf ||
-        oldState.selfVideo !== newState.selfVideo ||
-        oldState.streaming !== newState.streaming) {
-      
+    if (
+      oldState.mute !== newState.mute ||
+      oldState.deaf !== newState.deaf ||
+      oldState.selfMute !== newState.selfMute ||
+      oldState.selfDeaf !== newState.selfDeaf ||
+      oldState.selfVideo !== newState.selfVideo ||
+      oldState.streaming !== newState.streaming
+    ) {
       const channelName = newState.channel.name;
-      
+
       let statusChanges = [];
-      
+
       // Server mute changes
       if (oldState.mute !== newState.mute) {
-        statusChanges.push(newState.mute ? "🔇 was server muted" : "🔊 was server unmuted");
+        statusChanges.push(
+          newState.mute ? "🔇 was server muted" : "🔊 was server unmuted"
+        );
       }
-      
+
       // Server deafen changes
       if (oldState.deaf !== newState.deaf) {
-        statusChanges.push(newState.deaf ? "🔇 was server deafened" : "🔊 was server undeafened");
+        statusChanges.push(
+          newState.deaf ? "🔇 was server deafened" : "🔊 was server undeafened"
+        );
       }
-      
+
       // Self mute changes
       if (oldState.selfMute !== newState.selfMute) {
-        statusChanges.push(newState.selfMute ? "🎙️ muted themselves" : "🎙️ unmuted themselves");
+        statusChanges.push(
+          newState.selfMute ? "🎙️ muted themselves" : "🎙️ unmuted themselves"
+        );
       }
-      
+
       // Self deafen changes
       if (oldState.selfDeaf !== newState.selfDeaf) {
-        statusChanges.push(newState.selfDeaf ? "🎧 deafened themselves" : "🎧 undeafened themselves");
+        statusChanges.push(
+          newState.selfDeaf
+            ? "🎧 deafened themselves"
+            : "🎧 undeafened themselves"
+        );
       }
-      
+
       // Video changes
       if (oldState.selfVideo !== newState.selfVideo) {
-        statusChanges.push(newState.selfVideo ? "📹 turned on camera" : "📹 turned off camera");
+        statusChanges.push(
+          newState.selfVideo ? "📹 turned on camera" : "📹 turned off camera"
+        );
       }
-      
+
       // Stream changes
       if (oldState.streaming !== newState.streaming) {
-        statusChanges.push(newState.streaming ? "🖥️ started streaming" : "🖥️ stopped streaming");
+        statusChanges.push(
+          newState.streaming ? "🖥️ started streaming" : "🖥️ stopped streaming"
+        );
       }
-      
+
       const statusChangeText = statusChanges.join(", ");
-      
+
       const embed = {
-        color: 0x9B59B6, // Purple color
-        title: '⚙️ Voice Status Changed',
+        color: 0x9b59b6, // Purple color
+        title: "⚙️ Voice Status Changed",
         thumbnail: {
           url: user.user.displayAvatarURL({ dynamic: true }),
         },
         description: `**${user.user.tag}** in <#${newState.channelId}>   ${statusChangeText}`,
         timestamp: new Date(),
       };
-      
+
       await guildManagement.sendVoiceLogs(
-        client, 
-        guildId, 
-        user, 
+        client,
+        guildId,
+        user,
         statusChangeText,
         embed
       );
@@ -1664,34 +1850,30 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   }
 });
 
-
 client.on("messageCreate", async (message) => {
-  if (message.channel.type === ChannelType.DM && !message.content.startsWith(prefix)) {
+  if (
+    message.channel.type === ChannelType.DM &&
+    !message.content.startsWith(prefix)
+  ) {
     const anonCheck = await anonChat.checkSession(message);
     if (anonCheck) {
       anonChat.handleMessage(message);
       return;
-    };
-    // no prefix bot will automatically response with ai
-    if (!message.content.startsWith(prefix) && message.author.id !== client.user.id) {
-      const prompt = message.content
-      message.channel.sendTyping();
-      await apiManagement.aiResponse(message, prompt);
-    };
+    }
   }
   // if bot got tag and replied bot will run ai function
   const getMessageMention = message.mentions.users.first();
   const getBotReplied =
     message.reference && message.reference.messageId === client.user.id;
   if (getMessageMention === client.user || getBotReplied) {
-    console.log(message.content);
     const prompt = message.content
-    .slice(message.content.indexOf(">") + 1)
-    .trim();
+      .slice(message.content.indexOf(">") + 1)
+      .trim();
 
-    // jika tag dan sebut fisch
-    if(prompt.split(" ")[0].toLowerCase() === "fisch") return await commands.fisch(message, prompt.split(" ").slice(0));
-    
+    // jika tag dan sebut fisch atau fischae
+    if (prompt.split(" ")[0].toLowerCase() === "fisch")
+      return await commands.fisch(message, prompt.split(" ").slice(0));
+    if(prompt.split(" ")[0].toLowerCase() === "fischae") return await commands.fischae(message, prompt.split(" ").slice(0));
     message.channel.sendTyping();
     await apiManagement.aiResponse(message, prompt);
   }
@@ -1699,12 +1881,28 @@ client.on("messageCreate", async (message) => {
   if (!message.content.startsWith(prefix)) return;
   const args = message.content.slice(prefix.length).trim().split(/\s+/);
   const command = args[0].toLowerCase();
+
   if (commands[command]) {
     try {
       await commands[command](message, args);
     } catch (error) {
       console.error(`Error executing command ${command}:`, error);
       message.reply("An error occurred while executing the command.");
+    }
+  } else {
+    // similarity check for typo correction
+    let highestSimilarity = null;
+    let mostSimilarCommand = null;
+    for (const cmd in commands) {
+      const similarityCheck = similarity(command, cmd);
+      if (similarityCheck > highestSimilarity) {
+        highestSimilarity = similarityCheck;
+        mostSimilarCommand = cmd;
+      }
+    }
+    if (mostSimilarCommand) {
+      await message.reply(`Did you mean ${config.defaultPrefix} ${mostSimilarCommand}?`); // reply with the mostSimilarCommand;
+      return;
     }
   }
 });

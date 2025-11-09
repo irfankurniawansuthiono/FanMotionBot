@@ -1,10 +1,11 @@
 {
-  "name": "nanami",
+  "name": "fanmotion",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "version": "1.5.9",
   "peerDependencies": {
     "typescript": "^5.7.3"
   },

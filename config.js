@@ -22,7 +22,7 @@ const config = {
   announcementChannelID: "1400488186416730303",
   fischPSInfoChannelID: "1423895622532071525",
   fischRoleInfoID: "1434915249957634079",
-  defaultPrefix: "FM",
+  defaultPrefix: "FMT",
   startingBalance: 10000,
   guildFile: "./guilds.json",
   dataFile: "./players.json",

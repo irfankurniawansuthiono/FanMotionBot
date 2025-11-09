@@ -1910,67 +1910,67 @@ class SlashCommands {
                 })}}
             }),
 
-            banUser: () => ({
-                data: new SlashCommandBuilder()
-                .setName("ban-user")
-                .setDescription("Ban a user")
-                .addUserOption(option =>
-                    option.setName("user")
-                      .setDescription("The user to ban")
-                      .setRequired(true)
-                )
-                .addStringOption(option =>
-                    option.setName("reason")
-                      .setDescription("The reason for the ban")
-                      .setRequired(false)
-                )
-                .addIntegerOption(option =>
-                    option.setName("days")
-                      .setDescription("The number of days to ban the user for")
-                      .setRequired(false)
-                ),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        const user = interaction.options.getUser("user");
-                        const reason = interaction.options.getString("reason") || "No reason provided";
-                        const days = interaction.options.getInteger("days") || 1;
-                        await this.discordFormat.banUser(interaction, user.id, days,reason);
-                        return await interaction.reply({ content: `${discordEmotes.success} User ${user} has been banned for ${days} day(s) for the reason: ${reason}`, ephemeral: true });
-                    }
-                catch (error) {
-                    console.error('Error in slash ban-user command:', error);
-                    await interaction.reply({
-                        content: `${discordEmotes.error} An error occurred while executing the command.`,
-                        ephemeral: true
-                })}
-                }
-            }),
+            // banUser: () => ({
+            //     data: new SlashCommandBuilder()
+            //     .setName("ban-user")
+            //     .setDescription("Ban a user")
+            //     .addUserOption(option =>
+            //         option.setName("user")
+            //           .setDescription("The user to ban")
+            //           .setRequired(true)
+            //     )
+            //     .addStringOption(option =>
+            //         option.setName("reason")
+            //           .setDescription("The reason for the ban")
+            //           .setRequired(false)
+            //     )
+            //     .addIntegerOption(option =>
+            //         option.setName("days")
+            //           .setDescription("The number of days to ban the user for")
+            //           .setRequired(false)
+            //     ),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             const user = interaction.options.getUser("user");
+            //             const reason = interaction.options.getString("reason") || "No reason provided";
+            //             const days = interaction.options.getInteger("days") || 1;
+            //             await this.discordFormat.banUser(interaction, user.id, days,reason);
+            //             return await interaction.reply({ content: `${discordEmotes.success} User ${user} has been banned for ${days} day(s) for the reason: ${reason}`, ephemeral: true });
+            //         }
+            //     catch (error) {
+            //         console.error('Error in slash ban-user command:', error);
+            //         await interaction.reply({
+            //             content: `${discordEmotes.error} An error occurred while executing the command.`,
+            //             ephemeral: true
+            //     })}
+            //     }
+            // }),
 
-            unbanUser: () => ({
-                data: new SlashCommandBuilder()
-                .setName("unban-user")
-                .setDescription("Unban a user")
-                .addUserOption(option =>
-                    option.setName("user")
-                      .setDescription("The user to unban")
-                      .setRequired(true)
-                ),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        const user = interaction.options.getUser("user");
-                        await this.discordFormat.unbanUser(interaction, user.id);
-                        return await interaction.reply({ content: `${discordEmotes.success} User ${user} has been unbanned`, ephemeral: true });
-                    }
-                catch (error) {
-                    console.error('Error in slash unban-user command:', error);
-                    await interaction.reply({
-                        content: `${discordEmotes.error} An error occurred while executing the command.`,
-                        ephemeral: true
-                })
-                }}
-            }),
+            // unbanUser: () => ({
+            //     data: new SlashCommandBuilder()
+            //     .setName("unban-user")
+            //     .setDescription("Unban a user")
+            //     .addUserOption(option =>
+            //         option.setName("user")
+            //           .setDescription("The user to unban")
+            //           .setRequired(true)
+            //     ),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             const user = interaction.options.getUser("user");
+            //             await this.discordFormat.unbanUser(interaction, user.id);
+            //             return await interaction.reply({ content: `${discordEmotes.success} User ${user} has been unbanned`, ephemeral: true });
+            //         }
+            //     catch (error) {
+            //         console.error('Error in slash unban-user command:', error);
+            //         await interaction.reply({
+            //             content: `${discordEmotes.error} An error occurred while executing the command.`,
+            //             ephemeral: true
+            //     })
+            //     }}
+            // }),
 
             // generateAnime: () => ({
             //     data: new SlashCommandBuilder()
@@ -2246,74 +2246,74 @@ class SlashCommands {
                 }
             }),
 
-            CreateMutedRole: () => ({
-                data: new SlashCommandBuilder()
-                .setName("createmutedrole")
-                .setDescription("Create a muted role"),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        return await this.discordFormat.createMutedRole(interaction);
-                }
-                catch (error) {
-                    console.error('Error in slash createmutedrole command:', error);
-                    await interaction.reply({
-                        content: `${discordEmotes.error} An error occurred while executing the command.`,
-                        ephemeral: true
-                })
-                }
-                }
-            }),
+            // CreateMutedRole: () => ({
+            //     data: new SlashCommandBuilder()
+            //     .setName("createmutedrole")
+            //     .setDescription("Create a muted role"),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             return await this.discordFormat.createMutedRole(interaction);
+            //     }
+            //     catch (error) {
+            //         console.error('Error in slash createmutedrole command:', error);
+            //         await interaction.reply({
+            //             content: `${discordEmotes.error} An error occurred while executing the command.`,
+            //             ephemeral: true
+            //     })
+            //     }
+            //     }
+            // }),
 
-            muteUser: () => ({
-                data: new SlashCommandBuilder()
-                .setName("mute")
-                .setDescription("Mute a user")
-                .addUserOption(option =>
-                    option.setName("user")
-                      .setDescription("The user to mute")
-                      .setRequired(true)
-                  ),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        const user = interaction.options.getUser("user");
-                        return await this.discordFormat.muteUser(interaction, user.id);
-                }
-                catch (error) {
-                    console.error('Error in slash mute command:', error);
-                    await interaction.reply({
-                        content: `${discordEmotes.error} An error occurred while executing the command.`,
-                        ephemeral: true
-                })
-                }
-                }
-            }),
+            // muteUser: () => ({
+            //     data: new SlashCommandBuilder()
+            //     .setName("mute")
+            //     .setDescription("Mute a user")
+            //     .addUserOption(option =>
+            //         option.setName("user")
+            //           .setDescription("The user to mute")
+            //           .setRequired(true)
+            //       ),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             const user = interaction.options.getUser("user");
+            //             return await this.discordFormat.muteUser(interaction, user.id);
+            //     }
+            //     catch (error) {
+            //         console.error('Error in slash mute command:', error);
+            //         await interaction.reply({
+            //             content: `${discordEmotes.error} An error occurred while executing the command.`,
+            //             ephemeral: true
+            //     })
+            //     }
+            //     }
+            // }),
 
-            unmuteUser: () => ({
-                data: new SlashCommandBuilder()
-                .setName("unmute")
-                .setDescription("Unmute a user")
-                .addUserOption(option =>
-                    option.setName("user")
-                      .setDescription("The user to unmute")
-                      .setRequired(true)
-                  ),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        const user = interaction.options.getUser("user");
-                        return await this.discordFormat.unmuteUser(interaction, user.id);
-                }
-                catch (error) {
-                    console.error('Error in slash unmute command:', error);
-                    await interaction.reply({
-                        content: `${discordEmotes.error} An error occurred while executing the command.`,
-                        ephemeral: true
-                })
+            // unmuteUser: () => ({
+            //     data: new SlashCommandBuilder()
+            //     .setName("unmute")
+            //     .setDescription("Unmute a user")
+            //     .addUserOption(option =>
+            //         option.setName("user")
+            //           .setDescription("The user to unmute")
+            //           .setRequired(true)
+            //       ),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             const user = interaction.options.getUser("user");
+            //             return await this.discordFormat.unmuteUser(interaction, user.id);
+            //     }
+            //     catch (error) {
+            //         console.error('Error in slash unmute command:', error);
+            //         await interaction.reply({
+            //             content: `${discordEmotes.error} An error occurred while executing the command.`,
+            //             ephemeral: true
+            //     })
                 
-                }}
-            }),
+            //     }}
+            // }),
 
             backup: () => ({
                 data: new SlashCommandBuilder()
