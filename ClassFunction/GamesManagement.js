@@ -852,7 +852,7 @@ class Games {
             } detik.\n\nUntuk menjawab gunakan \n${prefix}clt <jawaban>.`
           )
           .setFooter({
-            text: "Created by Nanami",
+            text: "Created by FanMotion",
             iconURL: client.user.displayAvatarURL(),
           });
 
@@ -1034,7 +1034,7 @@ class Games {
             } detik.\nUntuk menjawab gunakan \n${prefix}tben <jawaban>.`
           )
           .setFooter({
-            text: "Created by Nanami",
+            text: "Created by FanMotion",
             iconURL: client.user.displayAvatarURL(),
           });
 
@@ -1193,7 +1193,7 @@ class Games {
             } detik.\n\nButuh Clue? ${prefix}tg clue\nUntuk menjawab gunakan \n${prefix}tg <jawaban>.`
           )
           .setFooter({
-            text: "Created by Nanami",
+            text: "Created by FanMotion",
             iconURL: client.user.displayAvatarURL(),
           });
 

@@ -831,8 +831,7 @@ async nanamiBotInfo(client, message){
               name: "🔗 Links",
               value: `• [Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot)
                     • [FanMotion Community Server](https://discord.gg/hXT5R2ND9a)
-                    • [Developer Website](${config.ownerWebsite})
-                    • [Nanami on WEBSITE!](${config.nanamiWebsite})`,
+                    • [Developer Website](${config.ownerWebsite})`,
               inline: false,
             }
           )
@@ -883,9 +882,8 @@ async nanamiHostingInfo(client, message) {
         {
           name: "🔗 Useful Links",
           value: `• [Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot)
-          • [Nanami Community Server](https://discord.gg/hXT5R2ND9a)
-          • [Developer Website](${config.ownerWebsite})
-          • [Nanami on WEBSITE!](${config.nanamiWebsite})`,
+          • [FanMotion Community Server](https://discord.gg/hXT5R2ND9a)
+          • [Developer Website](${config.ownerWebsite})`,
           inline: false,
         },
         {
@@ -899,7 +897,7 @@ async nanamiHostingInfo(client, message) {
         }
       )
       .setFooter({
-        text: "Nanami System Monitor 💡",
+        text: "FanMotion System Monitor 💡",
         iconURL: client.user.displayAvatarURL(),
       })
       .setTimestamp();
@@ -995,7 +993,7 @@ async nanamiOwnerInfo(client, message) {
                     **Personal Site : [Click Here](${config.ownerWebsite})**
                     **Github : [Click Here](${config.ownerGithub})**`,
         })
-        .setFooter({ text: "Nanami Owner Info" })
+        .setFooter({ text: "FanMotion Owner Info" })
         .setTimestamp();
   
       return message.reply({ embeds: [ownerHelpEmbed] });

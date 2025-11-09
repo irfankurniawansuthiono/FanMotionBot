@@ -26,7 +26,7 @@ import FishingManagement from "./ClassFunction/FishingManagement.js";
 import ShopManagement from "./ClassFunction/ShopManagement.js";
 // extractor
 import { SoundcloudExtractor } from "discord-player-soundcloud";
-import { YoutubeiExtractor } from "discord-player-youtubei"
+import { YoutubeExtractor } from "discord-player-youtube";
 import { SpotifyExtractor } from "discord-player-spotify";
 import GithubCron from "./ClassFunction/GithubCron.js";
 import BackupFiles from "./ClassFunction/BackupFiles.js";
@@ -1354,21 +1354,24 @@ client.once("ready", async () => {
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET
   });
-  const youtubeExtractorPlayer = await player.extractors.register(YoutubeiExtractor, {});
+  const youtubeExtractorPlayer = await player.extractors.register(YoutubeExtractor, {
+    cookie: process.env.YT_COOKIE || null,
+    filterAutoplayTracks: true, // enabled by default
+    disableYTJSLog: true, // silence youtubei.js logs
+  });
   
   soundcloudExtractorPlayer.priority = 1;
   spotifyExtractorPlayer.priority = 2;
   youtubeExtractorPlayer.priority = 3;
 
-  player.events.on("emptyChannel", (queue) => {
-    queue.metadata.send(
-      `${discordEmotes.error} Leaving because no one was listening for the past 5 minutes`
-    );
+ player.events.on("emptyChannel", (queue) => {
+    // Emitted when the voice channel is empty
+    if (queue.metadata.channel) {
+      queue.metadata.channel.send("👋 Voice channel is empty, leaving the channel...");
+    }
   });
   
   player.events.on("debug", async (queue, message) => {
-    // Emitted when the player queue sends debug info
-    // Useful for seeing what state the current queue is at
     console.log(`Player debug event: ${message}`);
   });
   // Set up global player event listeners

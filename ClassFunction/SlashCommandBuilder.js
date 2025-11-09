@@ -1000,7 +1000,7 @@ class SlashCommands {
             inviteBot: () => ({
                 data: new SlashCommandBuilder()
                 .setName("invite")
-                .setDescription("Invite nanami to your server"),
+                .setDescription("Invite FanMotion to your server"),
                 execute: async (interaction) => {
                     try {
                         return await this.discordFormat.inviteBot(interaction);
@@ -1014,7 +1014,7 @@ class SlashCommands {
             setBotStatus: () => ({
                 data: new SlashCommandBuilder()
                 .setName("set-status")
-                .setDescription("Set the status of nanami")
+                .setDescription("Set the status of FanMotion")
                 .addStringOption(option =>
                     option.setName("mode")
                         .setDescription("The mode to set the status in")
@@ -1059,7 +1059,7 @@ class SlashCommands {
             setBotPrefix: () => ({
                 data: new SlashCommandBuilder()
                 .setName("set-prefix")
-                .setDescription("Set the prefix for nanami")
+                .setDescription("Set the prefix for FanMotion")
                 .addStringOption(option =>
                     option.setName("prefix")
                         .setDescription("The prefix to set")
