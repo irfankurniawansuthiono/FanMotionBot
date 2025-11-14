@@ -10,7 +10,6 @@ import GithubCron from './GithubCron.js';
 import ShopManagement from './ShopManagement.js';
 import FishingManagement from './FishingManagement.js';
 import AnonChat from './AnonimManagement.js';
-import { Games } from './GamesManagement.js';
 import { ownerHelperFirewall, guildAdmin, formatBalance } from '../index.js';
 import BackupFiles from './BackupFiles.js';
 
@@ -203,55 +202,55 @@ class SlashCommands {
                     }
                 }
             }),
-            warninfo: () => ({
-                data: new SlashCommandBuilder()
-                    .setName('warn-info')
-                    .setDescription('Get information about the warning of an user')
-                    .addUserOption(option =>
-                        option.setName('user')
-                            .setDescription('The user to get warning information for')
-                            .setRequired(true)
-                    ),
-                execute: async (interaction) => {
-                    try {
-                         if(!guildAdmin(interaction)) return;
-                            const guildId = interaction.guild.id;
-                            const user = interaction.options.getUser('user');
-                            await this.discordFormat.warnInfo(guildId, user, interaction);
-                    } catch (error) {
-                        console.error('Error in slash warninfo command:', error);
-                        return interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
-                    }
-                }
-            }),
+            // warninfo: () => ({
+            //     data: new SlashCommandBuilder()
+            //         .setName('warn-info')
+            //         .setDescription('Get information about the warning of an user')
+            //         .addUserOption(option =>
+            //             option.setName('user')
+            //                 .setDescription('The user to get warning information for')
+            //                 .setRequired(true)
+            //         ),
+            //     execute: async (interaction) => {
+            //         try {
+            //              if(!guildAdmin(interaction)) return;
+            //                 const guildId = interaction.guild.id;
+            //                 const user = interaction.options.getUser('user');
+            //                 await this.discordFormat.warnInfo(guildId, user, interaction);
+            //         } catch (error) {
+            //             console.error('Error in slash warninfo command:', error);
+            //             return interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
+            //         }
+            //     }
+            // }),
 
-            warn: () => ({
-                data: new SlashCommandBuilder()
-                    .setName('warn')
-                    .setDescription('Warn a user')
-                    .addUserOption(option =>
-                        option.setName('user')
-                            .setDescription('The user to warn')
-                            .setRequired(true)
-                    )
-                    .addStringOption(option => 
-                        option.setName('reason')
-                            .setDescription('The reason for the warning')
-                            .setRequired(true)
-                    ),
-                execute: async (interaction) => {
-                    try {
-                        if(!guildAdmin(interaction)) return;
-                        const guildId = interaction.guild.id;
-                        const user = interaction.options.getUser('user');
-                        const reason = interaction.options.getString('reason');
-                        await this.discordFormat.warnUser(guildId, user, reason, interaction);
-                    } catch (error) {
-                        console.error('Error in slash warn command:', error);
-                        return interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
-                    }
-                }
-            }),
+            // warn: () => ({
+            //     data: new SlashCommandBuilder()
+            //         .setName('warn')
+            //         .setDescription('Warn a user')
+            //         .addUserOption(option =>
+            //             option.setName('user')
+            //                 .setDescription('The user to warn')
+            //                 .setRequired(true)
+            //         )
+            //         .addStringOption(option => 
+            //             option.setName('reason')
+            //                 .setDescription('The reason for the warning')
+            //                 .setRequired(true)
+            //         ),
+            //     execute: async (interaction) => {
+            //         try {
+            //             if(!guildAdmin(interaction)) return;
+            //             const guildId = interaction.guild.id;
+            //             const user = interaction.options.getUser('user');
+            //             const reason = interaction.options.getString('reason');
+            //             await this.discordFormat.warnUser(guildId, user, reason, interaction);
+            //         } catch (error) {
+            //             console.error('Error in slash warn command:', error);
+            //             return interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
+            //         }
+            //     }
+            // }),
 
             setwelcome: () => ({
                 data: new SlashCommandBuilder()
