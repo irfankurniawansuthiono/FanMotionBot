@@ -336,27 +336,34 @@ const commands = {
       const guild = client.guilds.cache.get(officialGuildId);
       const getRole = guild.roles.cache.get(config.fischRoleInfoID);
       const embed = new EmbedBuilder()
-  .setTitle("🎮 Global Server Event Information")
-  .setColor(0x2ecc71)
-  .setDescription(`📢 A **Global Event** has just started! make sure not to miss **${eventInfo.toUpperCase()}**!`)
-  .addFields(
-    { name: "🎉 Event", value: `**${eventInfo.toUpperCase()}**`, inline: true },
-  )
-  .setFooter({ text: message.author.tag, iconURL: message.author.displayAvatarURL() })
-  .setTimestamp();
+        .setTitle("🎮 Global Server Event Information")
+        .setColor(0x2ecc71)
+        .setDescription(
+          `📢 A **Global Event** has just started! make sure not to miss **${eventInfo.toUpperCase()}**!`
+        )
+        .addFields({
+          name: "🎉 Event",
+          value: `**${eventInfo.toUpperCase()}**`,
+          inline: true,
+        })
+        .setFooter({
+          text: message.author.tag,
+          iconURL: message.author.displayAvatarURL(),
+        })
+        .setTimestamp();
 
       if (eventInfo.toLowerCase() === "" || !eventInfo) {
         return message.reply(
           "usage : @fanmotion/FM fischae <ps1/ps2> <event info>"
         );
-      } 
+      }
       const targetChannel = message.client.channels.cache.get(
         config.fischPSInfoChannelID
       );
       if (targetChannel)
         await targetChannel.send({
           content: `${getRole}\n#  **📢 A Global Server Event** - **${eventInfo.toUpperCase()}**\n> Link to PS: <#1435601258135290069>`,
-          embeds: [embed]
+          embeds: [embed],
         });
       else await message.channel.send("Target channel not found.");
     } catch (error) {
@@ -366,7 +373,166 @@ const commands = {
       );
     }
   },
-  fisch: async (message, args) => {
+  fischhunt: async (message, args) => {
+    try { 
+      // owner helper firewall
+      if (!ownerHelperFirewall(message.author.id, message)) return;
+      const fanMotionbaseChannelID = config.guildBaseServerID;
+      const fischHuntLogsChannelID = config.fischHuntLogsChannelID;
+      const verifiedRobloxRoleID = config.verifiedRobloxRoleID;
+      const fischHuntRoleID = config.fischHuntRoleID;
+
+      const guild = client.guilds.cache.get(fanMotionbaseChannelID);
+      if (!guild) return message.reply("Guild tidak ditemukan.");
+
+      const targetChannel = guild.channels.cache.get(fischHuntLogsChannelID);
+      if (!targetChannel)
+        return message.reply("Fisch Hunt logs channel not found.");
+
+      const unixTimestamp = Math.floor(Date.now() / 1000);
+
+      const embed = new EmbedBuilder()
+        .setTitle("🎣 New Fisch Hunt Activity Logged")
+        .setColor(0x2ecc71)
+        .setDescription(`Hunt Activity: **<t:${unixTimestamp}:f>**`);
+
+      const fischEmbedMessage = new EmbedBuilder()
+        .setTitle(`🎣 Fisch Hunt Activity <t:${unixTimestamp}:R>`)
+        .setColor(0x3498db)
+        .setDescription(`Hunt Activity: **${new Date().toLocaleString()}**`)
+        .addFields({
+          name: "Details",
+          value: "Please react with 🎣 to get the fisch ps link hunt activity!",
+        });
+
+      await targetChannel.send({ embeds: [embed] });
+
+      const fischHuntMessage = await message.reply({
+        embeds: [fischEmbedMessage],
+      });
+      await fischHuntMessage.react("🎣");
+
+      const collector = fischHuntMessage.createReactionCollector({
+        time: 300000, // 5 menit
+        dispose: true, // supaya event 'remove' jalan
+      });
+
+      // ADD REACT -> kasih role
+      collector.on("collect", async (reaction, user) => {
+        if (user.bot) return; // abaikan bot
+        const member = guild.members.cache.get(user.id);
+        if (!member) {
+          await reaction.users.remove(user.id).catch(() => null);
+          return;
+        }
+
+        const hasVerifiedRole = member.roles.cache.has(verifiedRobloxRoleID);
+
+        // CEK ROLE DI SINI
+        if (!hasVerifiedRole) {
+          // Hapus reaksi mereka
+          await reaction.users.remove(user.id).catch((err) => {
+            console.error("Error removing reaction:", err);
+          });
+
+          // Kirim pesan warning
+          const warnMsg = new EmbedBuilder()
+            .setTitle("❌ Access Denied")
+            .setColor(0xe74c3c)
+            .setDescription(
+              `Sorry **${member.displayName}**, you need to be a verified Roblox member to join the Fisch Hunt event. Please verify yourself first!`
+            )
+            .addFields(
+              {
+                name: "Required Role",
+                value: `<@&${verifiedRobloxRoleID}>`,
+              },
+              {
+                name: "How to Verify",
+                value:
+                  "Head over to <#1433344910798487623> and follow the instructions to verify your Roblox account.",
+              }
+            )
+            .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
+            .setTimestamp();
+          const sentWarnMsg = await message.channel
+            .send({ embeds: [warnMsg] })
+            .catch(() => null);
+
+          if (sentWarnMsg) {
+            setTimeout(() => {
+              sentWarnMsg.delete().catch(() => null);
+            }, 10000);
+          }
+          return;
+        }
+        // Tambah role hunt
+        await member.roles.add(fischHuntRoleID).catch(() => null);
+
+        const displayName = member.displayName || user.username;
+
+        const joinedEmbed = new EmbedBuilder()
+          .setTitle("🎣 Fisch Hunt Members")
+          .setColor(0x1abc9c)
+          .setDescription(`**${displayName}** has joined the Fisch Hunt event!`)
+          .addFields(
+            { name: "Role Assigned", value: `<@&${fischHuntRoleID}>` },
+            { name: "Roblox Username", value: `${displayName}` }
+          )
+          .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
+          .setTimestamp();
+
+        await targetChannel.send({ embeds: [joinedEmbed] });
+      });
+
+      // REMOVE REACT -> remove role + log
+      collector.on("remove", async (reaction, user) => {
+        const member = guild.members.cache.get(user.id);
+        if (!member) return;
+
+        const hasRole = member.roles.cache.has(fischHuntRoleID);
+        if (hasRole) {
+          await member.roles.remove(fischHuntRoleID).catch(() => null);
+        } else {
+          return;
+        }
+
+        const displayName = member.displayName || user.username;
+
+        const leftEmbed = new EmbedBuilder()
+          .setTitle("🎣 Fisch Hunt Members")
+          .setColor(0xe67e22)
+          .setDescription(
+            `**${displayName}** has left the Fisch Hunt event (removed 🎣 reaction).`
+          )
+          .addFields(
+            {
+              name: "Role Removed",
+              value: hasRole
+                ? `<@&${fischHuntRoleID}>`
+                : "User didn't have role.",
+            },
+            { name: "Roblox Username", value: `${displayName}` }
+          )
+          .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
+          .setTimestamp();
+
+        await targetChannel.send({ embeds: [leftEmbed] });
+      });
+
+      collector.on("end", () => {
+        // optional: hapus semua reaction setelah 5 menit
+        fischHuntMessage.reactions.removeAll().catch(() => null);
+      });
+    } catch (error) {
+      console.error("Error logging Fisch Hunt activity:", error);
+      await message.reply(
+        "An error occurred while logging the Fisch Hunt activity."
+      );
+    }
+  },
+
+  fischps: async (message, args) => {
     try {
       // delete message author to keep channel clean
       await message.delete();
@@ -879,9 +1045,6 @@ const commands = {
       const targetUser = originalMessage.mentions.users.first();
       const target = targetChannel || targetUser;
       const text = args.slice(2).join(" ");
-      console.log("Target:", target);
-      console.log("Text:", text);
-      console.log("Amount:", amount);
       return discordFormat.spamSendTo(target, text, amount, originalMessage);
     } catch (error) {
       console.error("Error in spamsendto command:", error);
@@ -1873,7 +2036,8 @@ client.on("messageCreate", async (message) => {
     // jika tag dan sebut fisch atau fischae
     if (prompt.split(" ")[0].toLowerCase() === "fisch")
       return await commands.fisch(message, prompt.split(" ").slice(0));
-    if(prompt.split(" ")[0].toLowerCase() === "fischae") return await commands.fischae(message, prompt.split(" ").slice(0));
+    if (prompt.split(" ")[0].toLowerCase() === "fischae")
+      return await commands.fischae(message, prompt.split(" ").slice(0));
     message.channel.sendTyping();
     await apiManagement.aiResponse(message, prompt);
   }
@@ -1901,7 +2065,9 @@ client.on("messageCreate", async (message) => {
       }
     }
     if (mostSimilarCommand) {
-      await message.reply(`Did you mean ${config.defaultPrefix} ${mostSimilarCommand}?`); // reply with the mostSimilarCommand;
+      await message.reply(
+        `Did you mean ${config.defaultPrefix} ${mostSimilarCommand}?`
+      ); // reply with the mostSimilarCommand;
       return;
     }
   }

@@ -19,9 +19,13 @@ const config = {
   // newCommandsChannelID: "1332378586614599752",
   // anonimLogsChannelID : "1333476337373155358",
   guildBaseServerID: "1400476982893871194",
+  verifiedRobloxRoleID: "1433345314097598485",
+  verifiedRobloxChannelID: "1433344910798487623",
+  fischHuntRoleID: "1431211708227129455",
   announcementChannelID: "1400488186416730303",
   fischPSInfoChannelID: "1423895622532071525",
   fischRoleInfoID: "1434915249957634079",
+  fischHuntLogsChannelID: "1438937741470470265",
   defaultPrefix: "FM",
   startingBalance: 10000,
   guildFile: "./guilds.json",
@@ -156,7 +160,6 @@ const pages = {
       // },      
     ],
   },
-
   3: {
     title: "🎮 Games & Social",
     fields: [
@@ -233,6 +236,20 @@ const pages = {
       },
     ],
   },
+  5: {
+    title: "Fisch Roblox Exclusive Commands",
+    fields: [
+      {
+        name: "🎣 Fisch Commands" ,
+        value: [
+          "`🎣 fischae <admin_event>` - giving announcement about admin global event in fisch",
+          "`🎣 fischps <ps1/ps2> <event>` - giving announcement about private server information",
+          "`🎣 fischhunt ` - to start fisch hunt activity (owner only)"
+        ].join("\n"),
+        inline: false,
+      },
+    ],
+  }
 };
 
 export { config, discordEmotes, pages, newPlayerData };
