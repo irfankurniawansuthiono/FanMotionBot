@@ -554,6 +554,27 @@ const commands = {
       );
     }
   },
+  rfischhunt: async (message, args) => {
+    try {
+      // owner command
+      if (!ownerHelperFirewall(message.author.id, message)) return;
+      const roleFischHunt = config.fischHuntRoleID;
+      const guild = client.guilds.cache.get(message.guild.id);
+      if (!guild) return message.reply("Guild not found.");
+      const roleMembers = guild.roles.cache.get(roleFischHunt);
+      if (!roleMembers) return message.reply("Role not found.");
+      for (const [memberId, member] of roleMembers.members) {
+        await member.roles.remove(roleMembers).catch(() => null);
+        await message.channel.send(`${member} has been removed from the Fisch Hunt role.`);
+      }
+    } catch (error) {
+      console.error("Error removing Fisch Hunt role members:", error);
+      await message.reply(
+        "An error occurred while removing Fisch Hunt role members."
+      )
+    }
+
+  },
 
   fischps: async (message, args) => {
     try {

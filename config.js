@@ -244,7 +244,8 @@ const pages = {
         value: [
           "`🎣 fischae <admin_event>` - giving announcement about admin global event in fisch",
           "`🎣 fischps <ps1/ps2> <event>` - giving announcement about private server information",
-          "`🎣 fischhunt ` - to start fisch hunt activity (owner only)"
+          "`🎣 fischhunt ` - to start fisch hunt activity (owner only)",
+          "`🎣 rfischhunt ` - to reset fisch hunt role members (owner only)",
         ].join("\n"),
         inline: false,
       },
