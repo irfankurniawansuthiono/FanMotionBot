@@ -466,6 +466,29 @@ const commands = {
           }
           return;
         }
+        if(reaction.count > 20) {
+          await reaction.users.remove(user.id).catch((err) => {
+            console.error("Error removing reaction:", err);
+          });
+          const serverFullEmbed = new EmbedBuilder()
+            .setTitle("❌ Server Full")
+            .setColor(0xe74c3c)
+            .setDescription(
+              `Sorry **${member.displayName}**, the server is full. Please wait for the next Fisch Hunt event.`
+            )
+            .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
+            .setTimestamp();
+          const sentServerFullMsg = await message.channel
+            .send({ embeds: [serverFullEmbed] })
+            .catch(() => null);
+
+            if (sentServerFullMsg) {
+              setTimeout(() => {
+                sentServerFullMsg.delete().catch(() => null);
+              }, 10000);
+            }
+          return
+        }
         // Tambah role hunt
         await member.roles.add(fischHuntRoleID).catch(() => null);
 
