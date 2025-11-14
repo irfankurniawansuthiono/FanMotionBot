@@ -466,7 +466,7 @@ const commands = {
           }
           return;
         }
-        if(reaction.count > 21) {
+        if(reaction.count > 20) {
           await reaction.users.remove(user.id).catch((err) => {
             console.error("Error removing reaction:", err);
           });
