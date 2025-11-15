@@ -491,6 +491,8 @@ const commands = {
         }
         // Tambah role hunt
         await member.roles.add(fischHuntRoleID).catch(() => null);
+        // Kirim pesan sukses
+        await message.channel.send(`${member} has joined the Fisch Hunt event!, please head over to <#1431211891736186992> to get the fisch ps link hunt!`);
 
         const displayName = member.displayName || user.username;
 
