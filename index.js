@@ -403,6 +403,9 @@ const commands = {
         .addFields({
           name: "Details",
           value: "Please react with 🎣 to get the fisch ps link hunt activity!",
+        }).addFields({
+          name: "PS LINK",
+          value: "<#1431211891736186992>",
         });
 
       await targetChannel.send({ embeds: [embed] });
@@ -491,8 +494,7 @@ const commands = {
         }
         // Tambah role hunt
         await member.roles.add(fischHuntRoleID).catch(() => null);
-        // Kirim pesan sukses
-        await message.channel.send(`${member} has joined the Fisch Hunt event!, please head over to <#1431211891736186992> to get the fisch ps link hunt!`);
+       
 
         const displayName = member.displayName || user.username;
 
@@ -507,7 +509,7 @@ const commands = {
           .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
           .setTimestamp();
 
-        await targetChannel.send({ embeds: [joinedEmbed] });
+        await targetChannel.send({embeds: [joinedEmbed] });
       });
 
       // REMOVE REACT -> remove role + log
