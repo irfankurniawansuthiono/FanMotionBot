@@ -2079,7 +2079,7 @@ client.on("messageCreate", async (message) => {
 
     // jika tag dan sebut fisch atau fischae
     if (prompt.split(" ")[0].toLowerCase() === "fisch")
-      return await commands.fisch(message, prompt.split(" ").slice(0));
+      return await commands.fischps(message, prompt.split(" ").slice(0));
     if (prompt.split(" ")[0].toLowerCase() === "fischae")
       return await commands.fischae(message, prompt.split(" ").slice(0));
     message.channel.sendTyping();
