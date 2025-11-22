@@ -560,7 +560,7 @@ const commands = {
   },
   dxiszuzennclaimrole: async (message, args) => {
     const rolesID = [
-      "1409114957353717801", "1400477685960016003", "1400477417939931409"
+      "1409114957353717801", "1400477685960016003", "1400477417939931409", "1436673972929560657"
     ];
     const guild = client.guilds.cache.get(config.guildBaseServerID);
     if (!guild) return message.reply("Guild not found.");
