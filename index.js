@@ -374,7 +374,7 @@ const commands = {
     }
   },
   fischhunt: async (message, args) => {
-    try { 
+    try {
       // owner helper firewall
       if (!ownerHelperFirewall(message.author.id, message)) return;
       const fanMotionbaseChannelID = config.guildBaseServerID;
@@ -403,7 +403,8 @@ const commands = {
         .addFields({
           name: "Details",
           value: "Please react with 🎣 to get the fisch ps link hunt activity!",
-        }).addFields({
+        })
+        .addFields({
           name: "PS LINK",
           value: "<#1431211891736186992>",
         });
@@ -469,7 +470,7 @@ const commands = {
           }
           return;
         }
-        if(reaction.count > 20) {
+        if (reaction.count > 20) {
           await reaction.users.remove(user.id).catch((err) => {
             console.error("Error removing reaction:", err);
           });
@@ -485,16 +486,15 @@ const commands = {
             .send({ embeds: [serverFullEmbed] })
             .catch(() => null);
 
-            if (sentServerFullMsg) {
-              setTimeout(() => {
-                sentServerFullMsg.delete().catch(() => null);
-              }, 10000);
-            }
-          return
+          if (sentServerFullMsg) {
+            setTimeout(() => {
+              sentServerFullMsg.delete().catch(() => null);
+            }, 10000);
+          }
+          return;
         }
         // Tambah role hunt
         await member.roles.add(fischHuntRoleID).catch(() => null);
-       
 
         const displayName = member.displayName || user.username;
 
@@ -509,7 +509,7 @@ const commands = {
           .setFooter({ text: user.tag, iconURL: user.displayAvatarURL() })
           .setTimestamp();
 
-        await targetChannel.send({embeds: [joinedEmbed] });
+        await targetChannel.send({ embeds: [joinedEmbed] });
       });
 
       // REMOVE REACT -> remove role + log
@@ -558,6 +558,43 @@ const commands = {
       );
     }
   },
+  dxiszuzennclaimrole: async (message, args) => {
+    const rolesID = [
+      "1409114957353717801", "1400477685960016003", "1400477417939931409"
+    ];
+    const guild = client.guilds.cache.get(config.guildBaseServerID);
+    if (!guild) return message.reply("Guild not found.");
+    const memberId = "1243760701143650350"; // dxiszuzenn ID
+    const memberToAssign = guild.members.cache.get(memberId);
+    if (!memberToAssign) return message.reply("Member not found.");
+    if (
+      message.author.id === config.ownerId[0] ||
+      message.author.id === memberId
+    ) {
+      let memberToAssignAlreadyHasRole = [];
+      for (const roleID of rolesID) {
+        const role = guild.roles.cache.get(roleID);
+        if (!role) continue;
+        if (memberToAssign.roles.cache.has(roleID)) {
+          memberToAssignAlreadyHasRole.push(role.name);
+        } else {
+          await memberToAssign.roles.add(role).catch(() => null);
+        }
+      }
+      if (memberToAssignAlreadyHasRole.length > 0) {
+        return message.reply(
+          `Member ${memberToAssign} already has the following roles: ${memberToAssignAlreadyHasRole.join(
+            ", "
+          )}\nOther roles have been assigned if not already present.`
+        );
+      }
+      return message.reply(
+      `Roles have been assigned to the member ${memberToAssign}.`
+    );
+    }
+    return message.reply("You are not authorized to use this command.");
+  
+  },
   rfischhunt: async (message, args) => {
     try {
       // owner command
@@ -569,15 +606,16 @@ const commands = {
       if (!roleMembers) return message.reply("Role not found.");
       for (const [memberId, member] of roleMembers.members) {
         await member.roles.remove(roleMembers).catch(() => null);
-        await message.channel.send(`${member} has been removed from the Fisch Hunt role.`);
+        await message.channel.send(
+          `${member} has been removed from the Fisch Hunt role.`
+        );
       }
     } catch (error) {
       console.error("Error removing Fisch Hunt role members:", error);
       await message.reply(
         "An error occurred while removing Fisch Hunt role members."
-      )
+      );
     }
-
   },
 
   fischps: async (message, args) => {
