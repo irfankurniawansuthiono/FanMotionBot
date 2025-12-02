@@ -348,7 +348,6 @@ class ApiManagement {
             },
           }
         );
-        console.log(uploadResponse.data)
         if (!uploadResponse.data?.fileUrl) {
           return await removebgMessage.edit(
             {content: `${discordEmotes.error} Failed to upload image to CDN. Please try again.`, ephemeral: true}
@@ -363,7 +362,6 @@ class ApiManagement {
         const response = await axios.get(
           `${API_URL}/tools/removebg?url=${encodedUrl}&apikey=${this.apiKey}`
         );
-        console.log(response.data)
         if (!response.data && !response.data.status !== 200) {
           return await removebgMessage.edit(
             {content: `${discordEmotes.error} Invalid response from Remini API. Please try again.`, ephemeral: true}
@@ -527,7 +525,6 @@ class ApiManagement {
             },
           }
         );
-        console.log("uploadResponse :", uploadResponse.data)
         if (!uploadResponse.data?.fileUrl) {
           return await reminiMessage.edit(
             {content:`${discordEmotes.error} Failed to upload image to CDN. Please try again.`, ephemeral: true}
@@ -542,7 +539,6 @@ class ApiManagement {
         const response = await axios.get(
           `${API_URL}/tools/remini?url=${encodedUrl}&apikey=${this.apiKey}`
         );
-        console.log("ReminiResponse :", response.data)
         if (!response.data && !response.data.status !== 200) {
           return await reminiMessage.edit(
             {content: `${discordEmotes.error} Invalid response from Remini API. Please try again.`, ephemeral: true}
@@ -624,7 +620,6 @@ class ApiManagement {
         }`,
         { timeout: 10000 } // Timeout 10 detik
       );
-      console.log(response.data)
       spotifyMessage.edit({content:`${discordEmotes.loading} Processing music...`, ephemeral: true});
       const data = response.data;
 

@@ -18,7 +18,6 @@ class DataManager {
   }
   setBalance(user, balance) {
     this.users[user.id].balance = balance;
-    console.log(`Balance for ${user} has been set to ${balance}.`);
     return this.saveData();
   }
 
@@ -26,7 +25,6 @@ class DataManager {
     const users = this.getAllUsers();
     // get balance terbesar
     const sortedUsers = Object.entries(users).sort(([, a], [, b]) => b.balance - a.balance);
-    console.log(sortedUsers);
     const medalEmojis = ["🥇", "🥈", "🥉"]; // Untuk Top 3
     const defaultEmoji = "🏅"; // Untuk posisi 4 sampai 10
   

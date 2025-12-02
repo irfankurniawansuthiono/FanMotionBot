@@ -29,6 +29,7 @@ import { SpotifyExtractor } from "discord-player-spotify";
 import GithubCron from "./ClassFunction/GithubCron.js";
 import BackupFiles from "./ClassFunction/BackupFiles.js";
 import similarity from "similarity";
+import RobloxFunction from "./ClassFunction/RobloxFunction.js";
 export const formatClockHHMMSS = (milliseconds) => {
   if (typeof milliseconds !== "number" || milliseconds < 0) {
     throw new Error("Input must be a non-negative number.");
@@ -78,7 +79,9 @@ export const createHelpEmbed = (page = 1, user) => {
     1: "#FF69B4", // Pink untuk Basic & Tools
     2: "#9B59B6", // Purple untuk Music & Moderation
     3: "#F1C40F", // Gold untuk Games & Social
-    4: "#E74C3C", // Red untuk Owner Commands
+    4: "#3498DB", // blue untuk fisch commands
+    5: "#2C3E50", // dark grey untuk Roblox Commands
+    6: "#E74C3C", // Red untuk Owner Commands
   };
   const embed = new EmbedBuilder()
     .setColor(embedColors[page])
@@ -111,6 +114,7 @@ const player = new Player(client);
 const gamesManagement = new Games();
 const fishingManagement = new FishingManagement();
 const anonChat = new AnonChat();
+const RobloxFunctions = new RobloxFunction();
 
 export const ownerHelperFirewall = (authorId, message) => {
   if (!config.ownerId.includes(authorId)) {
@@ -122,6 +126,13 @@ export const ownerHelperFirewall = (authorId, message) => {
   }
   return true;
 };
+
+function extractRobloxUsername(nickname) {
+  if (!nickname) return null;
+
+  const match = nickname.match(/\(([^)]+)\)/);
+  return match ? match[1] : null; // kalau tidak ada kurung, hasil null
+}
 
 export const guildAdmin = (ctx) => {
   let user, member, channelType;
@@ -560,7 +571,10 @@ const commands = {
   },
   dxiszuzennclaimrole: async (message, args) => {
     const rolesID = [
-      "1409114957353717801", "1400477685960016003", "1400477417939931409", "1436673972929560657"
+      "1409114957353717801",
+      "1400477685960016003",
+      "1400477417939931409",
+      "1436673972929560657",
     ];
     const guild = client.guilds.cache.get(config.guildBaseServerID);
     if (!guild) return message.reply("Guild not found.");
@@ -589,11 +603,10 @@ const commands = {
         );
       }
       return message.reply(
-      `Roles have been assigned to the member ${memberToAssign}.`
-    );
+        `Roles have been assigned to the member ${memberToAssign}.`
+      );
     }
     return message.reply("You are not authorized to use this command.");
-  
   },
   rfischhunt: async (message, args) => {
     try {
@@ -1685,6 +1698,106 @@ const commands = {
     if (message.author.id !== config.ownerId[0]) return;
     await backupManager.startBackup();
   },
+  robloxid: async (message, args) => {
+    const username = args[1];
+    if (!username) {
+      return message.reply(`Usage: ${prefix}robloxuserid <username>`);
+    }
+    const data = await RobloxFunctions.getUserId(username);
+    if (data) {
+      message.reply(`The Roblox user ID for **${username}** is **${data}**.`);
+    }
+  },
+  roblox: async (message, args) => {
+    let username = null;
+    // jika user di tag
+    if (message.mentions.users.size > 0) {
+      // get user nickname per server
+      const user = message.mentions.users.first();
+      username = extractRobloxUsername(
+        message.guild.members.cache.get(user.id).nickname
+      );
+    } else {
+      username = args[1];
+    }
+    if (!username) {
+      return message.reply(
+        `Usage: ${prefix}robloxprofile <username | @user (verified roblox)>`
+      );
+    }
+    const data = await RobloxFunctions.getUserProfileStats(message, username);
+   
+  },
+  robloxvalidityfollow: async (message, args) => {
+    let users = [];
+
+    // Jika mention
+    if (message.mentions.members.size > 0) {
+      users = message.mentions.members
+        .map((member) => {
+          const nick = member.nickname || member.user.username;
+          const rbx = extractRobloxUsername(nick);
+          return rbx ? { discord: member, roblox: rbx } : null;
+        })
+        .filter(Boolean);
+    } else {
+      // Argumen manual
+      const usernames = args
+        .slice(1)
+        .join(" ")
+        .split(",")
+        .map((v) => v.trim());
+
+      users = usernames.map((name) => ({
+        discord: null,
+        roblox: name,
+      }));
+    }
+
+
+    let valid = [];
+    let invalid = [];
+
+    for (const usr of users) {
+      try {
+        const ok = await RobloxFunctions.checkUserFollowingValidity(usr.roblox);
+        if (ok) valid.push(usr);
+        else invalid.push(usr);
+      } catch (e) {
+        console.error(e);
+        invalid.push(usr);
+      }
+    }
+
+    const formatList = (list) => {
+      if (!list.length) return "None";
+
+      return list
+        .map((u) => {
+          const mention = u.discord ? `<@${u.discord.id}>` : "`(no mention)`";
+          return `${mention} — **${u.roblox}**`;
+        })
+        .join("\n");
+    };
+
+    const embed = new EmbedBuilder()
+      .setTitle("Roblox Validity Follow")
+      .setColor("#FFD700")
+      .addFields(
+        {
+          name: "Valid Usernames",
+          value: formatList(valid),
+          inline: false,
+        },
+        {
+          name: "Invalid Usernames",
+          value: formatList(invalid),
+          inline: false,
+        }
+      );
+
+    return message.reply({ embeds: [embed] });
+  },
 };
 
 // Event Handlers
@@ -2140,22 +2253,10 @@ client.on("messageCreate", async (message) => {
       message.reply("An error occurred while executing the command.");
     }
   } else {
-    // similarity check for typo correction
-    let highestSimilarity = null;
-    let mostSimilarCommand = null;
-    for (const cmd in commands) {
-      const similarityCheck = similarity(command, cmd);
-      if (similarityCheck > highestSimilarity) {
-        highestSimilarity = similarityCheck;
-        mostSimilarCommand = cmd;
-      }
-    }
-    if (mostSimilarCommand) {
-      await message.reply(
-        `Did you mean ${config.defaultPrefix} ${mostSimilarCommand}?`
-      ); // reply with the mostSimilarCommand;
-      return;
-    }
+    // Optional: Inform the user about unknown command
+    message.reply(
+      `Unknown command. Use ${prefix}help to see the list of available commands.`
+    );
   }
 });
 

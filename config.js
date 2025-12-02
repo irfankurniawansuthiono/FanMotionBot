@@ -26,6 +26,7 @@ const config = {
   fischPSInfoChannelID: "1423895622532071525",
   fischRoleInfoID: "1434915249957634079",
   fischHuntLogsChannelID: "1438937741470470265",
+  robloxOwnerId: 2066916909,
   defaultPrefix: "FM",
   startingBalance: 10000,
   guildFile: "./guilds.json",
@@ -197,6 +198,34 @@ const pages = {
     ],
   },
   4: {
+    title: "🤖 Roblox Commands",
+    fields: [
+      {
+        name: "🤖 Roblox Commands" ,
+        value: [
+          "`🤖 roblox <username>` - to get roblox user information",
+          "`🤖 robloxid <username>` - to get roblox user id",
+        ].join("\n"),
+        inline: false,
+      },
+    ]
+    },
+  4: {
+    title: "Fisch Roblox Exclusive Commands",
+    fields: [
+      {
+        name: "🎣 Fisch Commands" ,
+        value: [
+          "`🎣 fischae <admin_event>` - giving announcement about admin global event in fisch",
+          "`🎣 fischps <ps1/ps2> <event>` - giving announcement about private server information",
+          "`🎣 fischhunt ` - to start fisch hunt activity (owner only)",
+          "`🎣 rfischhunt ` - to reset fisch hunt role members (owner only)",
+        ].join("\n"),
+        inline: false,
+      },
+    ],
+  },
+   4: {
     title: "⚡ Owner Commands",
     fields: [
       {
@@ -217,7 +246,8 @@ const pages = {
           "`🗣️ say <message>` - Send chat to current channel",
           "`🗣️ sendto <message>` - DM a user",
           "`👤 resetplayer <@user>` - reset a players",
-          "`🎉 giveawayall <amount>` - Send giveaway to all current registered players"
+          "`🎉 giveawayall <amount>` - Send giveaway to all current registered players",
+          "`✅ robloxvalidity <username1, username2> or <@user1, @user2>` - Check Roblox following validity",
         ].join("\n"),
         inline: false,
       },
@@ -236,21 +266,7 @@ const pages = {
       },
     ],
   },
-  5: {
-    title: "Fisch Roblox Exclusive Commands",
-    fields: [
-      {
-        name: "🎣 Fisch Commands" ,
-        value: [
-          "`🎣 fischae <admin_event>` - giving announcement about admin global event in fisch",
-          "`🎣 fischps <ps1/ps2> <event>` - giving announcement about private server information",
-          "`🎣 fischhunt ` - to start fisch hunt activity (owner only)",
-          "`🎣 rfischhunt ` - to reset fisch hunt role members (owner only)",
-        ].join("\n"),
-        inline: false,
-      },
-    ],
-  }
+  
 };
 
 export { config, discordEmotes, pages, newPlayerData };

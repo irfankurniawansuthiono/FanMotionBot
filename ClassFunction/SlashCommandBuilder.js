@@ -2469,7 +2469,6 @@ class SlashCommands {
     async deleteAllRegisteredCommands() {
         await this.client.application.commands.set([]).then(async () => {
             const commands = await this.client.application.commands.fetch();
-            console.log(commands.size === 0 ? "✅ Semua command berhasil dihapus!" : "⚠️ Masih ada command tersisa.");
         }).catch(console.error);
     }
     async deleteAllGuildRegisteredCommands() {

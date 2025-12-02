@@ -37,7 +37,6 @@ class GithubCron {
             const newPath = path.join(this.filePath, newFileName);
             
             fs.renameSync(oldPath, newPath);
-            console.log(`Renamed ${firstFile} to ${newFileName}`);
             return {status : true, fileName: newFileName};
         } catch (error) {
             console.error("Error renaming image:", error);
