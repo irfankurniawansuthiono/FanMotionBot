@@ -1,4 +1,4 @@
-# FanMotion Official Bot
+# FanMotion Official Bot!
 
 FanMotion adalah bot Discord yang dirancang untuk menambahkan keseruan ke server Anda. Dengan integrasi AI dan fitur gaming yang seru, bot ini siap menjadi tambahan sempurna untuk komunitas Anda.
 
